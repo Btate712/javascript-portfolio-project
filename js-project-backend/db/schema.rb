@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_18_162349) do
+ActiveRecord::Schema.define(version: 2019_10_18_185605) do
 
   create_table "encounters", force: :cascade do |t|
     t.integer "user_id"
@@ -21,12 +21,19 @@ ActiveRecord::Schema.define(version: 2019_10_18_162349) do
   end
 
   create_table "questions", force: :cascade do |t|
+    t.integer "topic_id"
     t.string "stem"
     t.string "choice_1"
     t.string "choice_2"
     t.string "choice_3"
     t.string "choice_4"
     t.integer "correct_choice"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "topics", force: :cascade do |t|
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

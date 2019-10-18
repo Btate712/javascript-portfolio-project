@@ -17,9 +17,16 @@ q1.choice_2 = "2"
 q1.choice_3 = "3"
 q1.choice_4 = "4"
 q1.correct_choice = 4
-q1.save
+
 
 e = Encounter.new
 e.user = bob
 e.question = q1
 e.save
+
+t = Topic.new
+t.name = "Math"
+t.save
+
+q1.topic = t
+q1.save

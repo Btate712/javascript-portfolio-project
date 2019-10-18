@@ -1,6 +1,7 @@
 class CreateQuestions < ActiveRecord::Migration[5.2]
   def change
     create_table :questions do |t|
+      t.integer :topic_id
       t.string :stem
       t.string :choice_1
       t.string :choice_2
