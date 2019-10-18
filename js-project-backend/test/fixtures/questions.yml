@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  stem: MyString
+  choice_1: MyString
+  choice_2: MyString
+  choice_3: MyString
+  choice_4: MyString
+  correct_choice: 1
+
+two:
+  stem: MyString
+  choice_1: MyString
+  choice_2: MyString
+  choice_3: MyString
+  choice_4: MyString
+  correct_choice: 1
