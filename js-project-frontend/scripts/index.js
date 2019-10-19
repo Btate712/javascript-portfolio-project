@@ -81,6 +81,7 @@ class Quiz {
   }
 
   storeQuizResults() {
+    quizTime = false;
     const questionResults = [];
     for (const question of this.questions) {
       questionResults.push( {'id': question.id, 'choice': question.choiceSelected} );
