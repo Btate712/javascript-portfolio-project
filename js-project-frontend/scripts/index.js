@@ -61,8 +61,27 @@ class Quiz {
       this.askQuestion();
     } else {
       console.log(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`)
-      // POST request with quiz object to populate encounter objects
+      this.storeQuizResults();
     }
+  }
+
+  storeQuizResults() {
+    const questionResults = [];
+    for (const question of this.questions) {
+      questionResults.push( {'id': question.id, 'choice': question.choiceSelected} );
+    }
+    const body = { "userId": userId, 'questions': questionResults };
+    console.log(body);
+
+    const encounterRequest = {
+      method: 'POST',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify(body)
+    };
+
+    fetch(`${BASE_URL}/encounters/`, encounterRequest)
+      .then((response) => response.json())
+      .then((json) => console.log(json));
   }
 
   complete() {
@@ -140,8 +159,7 @@ function login(username, password) {
 
   fetch(`${BASE_URL}/sessions/`, newSessionRequest)
     .then((response) => response.json())
-    .then((json) => userId = json.id)
-    .then(() => console.log(userId));
+    .then((json) => userId = json.id);
 }
 
 // Display / DOM interaction (View)
@@ -199,7 +217,7 @@ function buildQuestionDiv() {
 
 // Administer Quiz
 buildQuestionDiv();
-requestQuiz([1,2], 3)
+requestQuiz([1,2,3], 3)
   .then((questionArray) => buildOOQuiz(questionArray))
   .then((ooQuizResult) => quiz = ooQuizResult)
   .then(() => quiz.askQuestion());
