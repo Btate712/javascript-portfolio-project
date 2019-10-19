@@ -3,6 +3,7 @@ const BASE_URL = "http://localhost:3000";
 
 // Global Variables:
 let quiz;
+let userId;
 
 // Classes (Model)
 class Question {
@@ -127,6 +128,20 @@ function getAllTopics() {
   fetch(`${BASE_URL}/topics`)
     .then((response) => response.json())
     .then((json) => console.log(json));
+}
+
+// User Functions
+function login(username, password) {
+  const newSessionRequest = {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify( { username: username, password: password } )
+  };
+
+  fetch(`${BASE_URL}/sessions/`, newSessionRequest)
+    .then((response) => response.json())
+    .then((json) => userId = json.id)
+    .then(() => console.log(userId));
 }
 
 // Display / DOM interaction (View)
