@@ -4,8 +4,19 @@ const BASE_URL = "http://localhost:3000";
 // Global Variables:
 let quiz;
 let userId;
+let topics = [];
 
 // Classes (Model)
+class Topic {
+  constructor(id, name) {
+    this._id = id;
+    this._name = name;
+  }
+
+  get id() { return this._id  }
+  get name() { return this._name }
+}
+
 class Question {
   constructor(questionObject, questionNumber) {
     this._id = questionObject.id;
@@ -144,10 +155,12 @@ function createNewTopic(topicName) {
 }
 
 function getAllTopics() {
-  fetch(`${BASE_URL}/topics`)
+  return fetch(`${BASE_URL}/topics`)
     .then((response) => response.json())
-    .then((json) => console.log(json));
-}
+    .then((json) => json.forEach((topic) => {
+      topics.push(new Topic(topic.id, topic.name))
+    }));
+  }
 
 // User Functions
 function login(username, password) {
@@ -210,13 +223,34 @@ function buildQuestionDiv() {
   return questionDiv;
 }
 
+function displayTopicList() {
+  document.querySelector("body").innerHTML = "";
+
+  const ul = document.createElement("ul");
+  document.querySelector("body").appendChild(ul);
+
+  for (const topic of topics) {
+    const li = document.createElement("li");
+    li.innerText = topic.name;
+    ul.appendChild(li);
+    const ck = document.createElement('input');
+    ck.type = "checkbox";
+    ck.id = `topic${topic.id}`
+    li.appendChild(ck);
+  }
+}
 // Program flow
   // Prompt for Username
-  // Log In User
-  // Display Topics to Select From
+
+// Log In User
+login("btate712", "temp");
+
+// Display Topics to Select From
+getAllTopics()
+  .then(() => displayTopicList());
 
 // Administer Quiz
-buildQuestionDiv();
+/* buildQuestionDiv();
 requestQuiz([1,2,3], 3)
   .then((questionArray) => buildOOQuiz(questionArray))
   .then((ooQuizResult) => quiz = ooQuizResult)
@@ -228,4 +262,4 @@ document.addEventListener("click", (e) => {
     choice = e.target.id;
     quiz.respondToSelection(choice[choice.length - 1]);
   }
-})
+})*/
