@@ -86,7 +86,6 @@ class Quiz {
       questionResults.push( {'id': question.id, 'choice': question.choiceSelected} );
     }
     const body = { "userId": userId, 'questions': questionResults };
-    console.log(body);
 
     const encounterRequest = {
       method: 'POST',
@@ -96,7 +95,7 @@ class Quiz {
 
     fetch(`${BASE_URL}/encounters/`, encounterRequest)
       .then((response) => response.json())
-      .then((json) => console.log(json));
+      .then((json) => console.log(json.message));
   }
 
   complete() {
@@ -270,26 +269,26 @@ function getTopicList() {
   const inputs = document.querySelectorAll("input");
   for (input of inputs) {
     if(input.type == "checkbox" && input.checked) {
-      topicIdList.push(input.id.slice(5))
+      topicIdList.push(parseInt(input.id.slice(5)))
     }
   }
   if (topicIdList == []) { // select all topics if none were checked
     for (input of inputs) {
-      topicIdList.push(input.id.slice(5))
+      topicIdList.push(parseInt(input.id.slice(5)))
     }
   }
   return topicIdList;
 }
 
 function getNumberofQuestions() {
-  return document.querySelector("#num-questions").value;
+  return parseInt(document.querySelector("#num-questions").value);
 }
 
 function getAndAdministerQuiz() {
   const selectedTopics = getTopicList();
   const numberOfQuestions = getNumberofQuestions();
   buildQuestionDiv();
-  requestQuiz(selectedTopics, 3)
+  requestQuiz(selectedTopics, numberOfQuestions)
     .then((questionArray) => buildOOQuiz(questionArray))
     .then((ooQuizResult) => quiz = ooQuizResult)
     .then(() => quizTime = true)
