@@ -84,7 +84,6 @@ function requestQuiz(topicIdsArray, numberOfQuestions) {
 
   return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
     .then((response) => response.json())
-    //.then((json) => administerQuiz(buildOOQuiz(json.quiz)));
     .then((json) => quiz = json.quiz);
 }
 
@@ -129,11 +128,6 @@ function getAllTopics() {
   fetch(`${BASE_URL}/topics`)
     .then((response) => response.json())
     .then((json) => console.log(json));
-}
-
-function administerQuiz(quiz) {
-  buildQuestionDiv();
-  askQuestion(quiz, 0);
 }
 
 // Display / DOM interaction (View)
