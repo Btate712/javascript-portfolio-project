@@ -16,8 +16,7 @@ class TopicsController < ApplicationController
   end
 
   def destroy
-    topicId = params[:id]
-    if topic = Topic.find(topicId)
+    if topic = Topic.find(params[:id])
       topic.delete
       render json: { message: "success" }
     else
