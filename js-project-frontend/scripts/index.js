@@ -20,7 +20,7 @@ class Question {
 
   set choiceSelected(choice) {
     _choiceSelected = choice
-    choice == correctChoice ? return true : return false;
+    return (choice == correctChoice ? true : false);
   }
 }
 
