@@ -1,10 +1,14 @@
 // Global Constants:
 const BASE_URL = "http://localhost:3000";
 
-// Global Variables:
+// Global (Window) Variables:
 let quiz;
 let userId;
 let topics = [];
+let quizTime = false;
+let topicSelectionTime = false;
+let loginTime = false;
+let newUserTime = false;
 
 // Classes (Model)
 class Topic {
@@ -258,6 +262,15 @@ function displayTopicList() {
   button.style = "block";
   div.appendChild(button);
 }
+
+function getAndAdministerQuiz() {
+  buildQuestionDiv();
+  requestQuiz([1,2,3], 3)
+    .then((questionArray) => buildOOQuiz(questionArray))
+    .then((ooQuizResult) => quiz = ooQuizResult)
+    .then(() => quizTime = true;)
+    .then(() => quiz.askQuestion());
+}
 // Program flow
   // Prompt for Username
 
@@ -268,16 +281,12 @@ login("btate712", "temp");
 getAllTopics()
   .then(() => displayTopicList());
 
-// Administer Quiz
-/* buildQuestionDiv();
-requestQuiz([1,2,3], 3)
-  .then((questionArray) => buildOOQuiz(questionArray))
-  .then((ooQuizResult) => quiz = ooQuizResult)
-  .then(() => quiz.askQuestion());
+// get user input for topic selection and get and administer quiz
+// getAndAdministerQuiz();
 
 // set up Event Listener to process question responses
 document.addEventListener("click", (e) => {
-  if (quiz && e.target.className == "choice") {
+  if (quizTime && e.target.className == "choice") {
     choice = e.target.id;
     quiz.respondToSelection(choice[choice.length - 1]);
   }
