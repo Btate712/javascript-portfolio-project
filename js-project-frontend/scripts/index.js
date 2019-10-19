@@ -40,7 +40,11 @@ class Quiz {
 }
 
 // Interface Methods (Controller)
+// Quiz Functions
+// requestQuiz takes topicIdsArray and numberOfQuestions and then builds and
+// sends a fetch request to get a list of quiz questions from the API.
 function requestQuiz(topicIdsArray, numberOfQuestions) {
+  let output = {};
   const topicIds = topicIdsArray.join(',');
   const questionIndexRequest = {
     method: 'POST',
@@ -48,9 +52,10 @@ function requestQuiz(topicIdsArray, numberOfQuestions) {
     body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
   };
 
-  fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
+  return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
     .then((response) => response.json())
-    .then((json) => administerQuiz(buildOOQuiz(json.quiz)));
+    //.then((json) => administerQuiz(buildOOQuiz(json.quiz)));
+    .then((json) => output = json.quiz);
 }
 
 function buildOOQuiz(questionObjectArray) {
@@ -64,6 +69,7 @@ function buildOOQuiz(questionObjectArray) {
   return quiz;
 }
 
+// Topic Functions
 function deleteTopic(topicId) {
   const topicDeleteRequest = {
     method: 'DELETE',
@@ -95,31 +101,37 @@ function getAllTopics() {
     .then((json) => console.log(json));
 }
 
-function administerQuiz(quiz) {
+function askQuestions(quiz, questionIndex) {
   let numberCorrect = 0;
-  buildQuestionDiv();
-  for (question of quiz.questions) {
-    console.log("new question");
-    displayQuestion(question);
-    firstTry = true;
-    questionComplete = false;
-    while (!questionComplete) {
-      document.addEventListener("click", (e) => {
-        if (e.target.className == "choice") {
-          choice = e.target.id;
-          choiceNumber = choice[choice.length - 1];
-          question.choiceSelected = choiceNumber;
-          if (question.answeredCorrectly() && firstTry && !questionComplete) {
-            numberCorrect++;
-            questionComplete = true;
-          } else {
-            firstTry = false;
-          }
-          console.log(numberCorrect);
-        }
-      })
+  question = quiz.questions[questionIndex];
+  displayQuestion(question);
+  firstTry = true;
+  questionComplete = false;
+  document.addEventListener("click", (e) => {
+    if (e.target.className == "choice") {
+      choice = e.target.id;
+      question.choiceSelected = choice[choice.length - 1];
+      if (question.answeredCorrectly() && !questionComplete) {
+        if (firstTry) { numberCorrect++; }
+        questionComplete = true;
+      } else {
+        firstTry = false;
+      }
+      clickFlag = false;
+      console.log(numberCorrect);
     }
-  }
+    if (questionIndex == quiz.questions.length - 1) {
+      return;
+    } else {
+      askQuestions(quiz, questionIndex + 1);
+    }
+    return
+  });
+}
+
+function administerQuiz(quiz) {
+  buildQuestionDiv();
+  askQuestions(quiz, 0);
 }
 
 // Display / DOM interaction (View)
@@ -171,4 +183,8 @@ function buildQuestionDiv() {
 }
 
 // Program flow
-quiz = requestQuiz([1,2], 3);
+// set up Event Listener to process question responses
+
+requestQuiz([1,2], 3)
+  .then((questionArray) => buildOOQuiz(questionArray))
+  .then((quiz) => administerQuiz(quiz));
