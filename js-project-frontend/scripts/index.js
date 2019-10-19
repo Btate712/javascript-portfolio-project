@@ -2,7 +2,7 @@
 const BASE_URL = "http://localhost:3000";
 
 // Global Variables:
-let quiz = {};
+let quiz;
 
 // Classes (Model)
 class Question {
@@ -51,7 +51,6 @@ class Quiz {
 
   respondToSelection(selection) {
     const question = this.questions[this._currentQuestionIndex];
-    console.log(question);
     question.choiceSelected = selection;
     if(question.answeredCorrectly()) {
       this._numberCorrect++;
@@ -192,7 +191,7 @@ requestQuiz([1,2], 3)
 
 // set up Event Listener to process question responses
 document.addEventListener("click", (e) => {
-  if (e.target.className == "choice") {
+  if (quiz && e.target.className == "choice") {
     choice = e.target.id;
     quiz.respondToSelection(choice[choice.length - 1]);
   }
