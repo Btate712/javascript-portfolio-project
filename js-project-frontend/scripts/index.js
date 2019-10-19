@@ -226,8 +226,12 @@ function buildQuestionDiv() {
 function displayTopicList() {
   document.querySelector("body").innerHTML = "";
 
+  const div = document.createElement("div");
+  div.id = "content-div";
+  document.querySelector("body").appendChild(div);
+
   const ul = document.createElement("ul");
-  document.querySelector("body").appendChild(ul);
+  document.querySelector("#content-div").appendChild(ul);
 
   for (const topic of topics) {
     const li = document.createElement("li");
@@ -238,6 +242,18 @@ function displayTopicList() {
     ck.id = `topic${topic.id}`
     li.appendChild(ck);
   }
+
+  const num = document.createElement("input");
+  num.type = "textbox";
+  num.id = "num-questions";
+  num.value = "5";
+  div.appendChild(num);
+
+  const button = document.createElement("button");
+  button.id = "make-quiz";
+  button.innerText = "Create Quiz";
+  button.style = "block";
+  div.appendChild(button);
 }
 // Program flow
   // Prompt for Username
