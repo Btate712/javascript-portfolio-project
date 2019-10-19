@@ -246,6 +246,9 @@ function displayTopicList() {
   const num = document.createElement("input");
   num.type = "textbox";
   num.id = "num-questions";
+  const p = document.createElement("p");
+  p.innerText = "Number of Questions:";
+  div.appendChild(p);
   num.value = "5";
   div.appendChild(num);
 
