@@ -1,6 +1,9 @@
 // Global Constants:
 const BASE_URL = "http://localhost:3000";
 
+// Global Variables:
+let quiz = {};
+
 // Classes (Model)
 class Question {
   constructor(questionObject, questionNumber) {
@@ -27,16 +30,44 @@ class Question {
   }
 
   answeredCorrectly() {
-    return (this.choiceSelected == this.correctChoice ? true : false);
+    return this._choiceSelected == this._correctChoice ? true : false;
   }
 }
 
 class Quiz {
   constructor(questionArray) {
     this._questions = questionArray;
+    this._currentQuestionIndex = 0;
+    this._numberCorrect = 0;
   }
 
   get questions() { return this._questions }
+
+  askQuestion() {
+    let numberCorrect = 0;
+    const question = this.questions[this._currentQuestionIndex];
+    displayQuestion(question);
+  }
+
+  respondToSelection(selection) {
+    const question = this.questions[this._currentQuestionIndex];
+    console.log(question);
+    question.choiceSelected = selection;
+    if(question.answeredCorrectly()) {
+      this._numberCorrect++;
+    }
+    this._currentQuestionIndex++;
+    if(!this.complete()) {
+      this.askQuestion();
+    } else {
+      console.log(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`)
+      // POST request with quiz object to populate encounter objects
+    }
+  }
+
+  complete() {
+    return this._currentQuestionIndex == this.questions.length ? true : false;
+  }
 }
 
 // Interface Methods (Controller)
@@ -44,7 +75,6 @@ class Quiz {
 // requestQuiz takes topicIdsArray and numberOfQuestions and then builds and
 // sends a fetch request to get a list of quiz questions from the API.
 function requestQuiz(topicIdsArray, numberOfQuestions) {
-  let output = {};
   const topicIds = topicIdsArray.join(',');
   const questionIndexRequest = {
     method: 'POST',
@@ -55,7 +85,7 @@ function requestQuiz(topicIdsArray, numberOfQuestions) {
   return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
     .then((response) => response.json())
     //.then((json) => administerQuiz(buildOOQuiz(json.quiz)));
-    .then((json) => output = json.quiz);
+    .then((json) => quiz = json.quiz);
 }
 
 function buildOOQuiz(questionObjectArray) {
@@ -65,8 +95,8 @@ function buildOOQuiz(questionObjectArray) {
     questionInstanceArray.push(new Question(question, index));
     index++;
   }
-  const quiz = new Quiz(questionInstanceArray);
-  return quiz;
+
+  return new Quiz(questionInstanceArray);
 }
 
 // Topic Functions
@@ -101,37 +131,9 @@ function getAllTopics() {
     .then((json) => console.log(json));
 }
 
-function askQuestions(quiz, questionIndex) {
-  let numberCorrect = 0;
-  question = quiz.questions[questionIndex];
-  displayQuestion(question);
-  firstTry = true;
-  questionComplete = false;
-  document.addEventListener("click", (e) => {
-    if (e.target.className == "choice") {
-      choice = e.target.id;
-      question.choiceSelected = choice[choice.length - 1];
-      if (question.answeredCorrectly() && !questionComplete) {
-        if (firstTry) { numberCorrect++; }
-        questionComplete = true;
-      } else {
-        firstTry = false;
-      }
-      clickFlag = false;
-      console.log(numberCorrect);
-    }
-    if (questionIndex == quiz.questions.length - 1) {
-      return;
-    } else {
-      askQuestions(quiz, questionIndex + 1);
-    }
-    return
-  });
-}
-
 function administerQuiz(quiz) {
   buildQuestionDiv();
-  askQuestions(quiz, 0);
+  askQuestion(quiz, 0);
 }
 
 // Display / DOM interaction (View)
@@ -183,8 +185,21 @@ function buildQuestionDiv() {
 }
 
 // Program flow
-// set up Event Listener to process question responses
+  // Prompt for Username
+  // Log In User
+  // Display Topics to Select From
 
+// Administer Quiz
+buildQuestionDiv();
 requestQuiz([1,2], 3)
   .then((questionArray) => buildOOQuiz(questionArray))
-  .then((quiz) => administerQuiz(quiz));
+  .then((ooQuizResult) => quiz = ooQuizResult)
+  .then(() => quiz.askQuestion());
+
+// set up Event Listener to process question responses
+document.addEventListener("click", (e) => {
+  if (e.target.className == "choice") {
+    choice = e.target.id;
+    quiz.respondToSelection(choice[choice.length - 1]);
+  }
+})
