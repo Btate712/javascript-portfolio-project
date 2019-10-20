@@ -535,6 +535,10 @@ function newQuestionForm() {
 
   btn = newHTML("button", "create-question-button");
   btn.innerText = "Create New Question";
+
+  newHTML("br", "break");
+  backButton = newHTML("button", "back-to-main");
+  backButton.innerText = "Back to Main Menu";
 }
 
 function listeners() {
