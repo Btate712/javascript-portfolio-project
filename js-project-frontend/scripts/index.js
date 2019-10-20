@@ -462,7 +462,14 @@ function createQuestion() {
 
   fetch(`${BASE_URL}/questions`, newQuestionRequest)
     .then((response) => response.json())
-    .then((json) => { console.log(json.message) });
+    .then((json) => {
+      if(json.message == "Success") {
+        displayMainMenu();
+      } else {
+        msg = newHTML("h2", "message");
+        msg.innerText = json.message;
+      }
+    });
 }
 
 function getQuestionData () {
