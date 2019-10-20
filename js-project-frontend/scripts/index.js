@@ -172,10 +172,10 @@ function login(username, password) {
 
   return fetch(`${BASE_URL}/sessions/`, newSessionRequest)
     .then((response) => response.json())
-    .then((json) => { console.log(json);
+    .then((json) => {
       userId = json.id;
-      currentUser = json.username})
-    .then(() => displayMainMenu());
+      currentUser = json.username;
+      displayMainMenu(json.message)});
 }
 
 function logout() {
@@ -191,6 +191,24 @@ function logout() {
     .then(() => showLogin());
 }
 
+function createUser(username, password) {
+  const newUserRequest = {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({
+      username: username, password: password
+    })
+  }
+
+  fetch(`${BASE_URL}/users`, newUserRequest)
+    .then((response) => response.json())
+    .then((json) => {
+      showLogin();
+      msg = newHTML("h1", "new-user-message")
+      msg.innerText = json.message;
+    });
+}
+
 // Helper Functions
 function newHTML(tag, id, parentId = "#content-div") {
   const temp = document.createElement(tag);
@@ -203,20 +221,23 @@ function clearContentDiv() {
   document.querySelector("#content-div").innerText = "";
 }
 
+function debounce() {
+
+}
+
 // Display / DOM interaction (View)
 function buildQuestionDiv() {
   document.querySelector("#content-div").innerHTML = "";
 
-  newHTML("div", "question");
-  newHTML("h1", "question-number", "#question");
-  newHTML("h3", "stem", "#question");
-  const choice1 = newHTML("h3", "choice1", "#question")
+  newHTML("h1", "question-number");
+  newHTML("h3", "stem");
+  const choice1 = newHTML("h3", "choice1")
   choice1.className = "choice";
-  const choice2 = newHTML("h3", "choice2", "#question")
+  const choice2 = newHTML("h3", "choice2")
   choice2.className = "choice";
-  const choice3 = newHTML("h3", "choice3", "#question")
+  const choice3 = newHTML("h3", "choice3")
   choice3.className = "choice";
-  const choice4 = newHTML("h3", "choice4", "#question")
+  const choice4 = newHTML("h3", "choice4")
   choice4.className = "choice";
 }
 
@@ -290,26 +311,61 @@ function getAndAdministerQuiz() {
     .then(() => quiz.askQuestion());
 }
 
-function displayMainMenu() {
-  document.querySelector("#content-div").innerText = "";
-
-  const welcome = newHTML("h1", "welcome");
-  welcome.innerText = "Welcome to another Quiz App!";
-
-  const likeTo = newHTML("h3", "like-to");
-  likeTo.innerText = "Would you like to...";
-
-  const quizButton = newHTML("button", "quiz-button");
-  quizButton.innerText = "Take a Quiz";
-
-  const statsButton = newHTML("button", "stats-button");
-  statsButton.innerText = "See Your Topic Stats";
-
-  const logoutButton = newHTML("button", "logout-button");
-  logoutButton.innerText = "Logout";
+function getAndDisplayStats() {
+  getStats()
+    .then((stats) => displayStats(stats.message));
 }
 
-function showLogin() {
+function displayStats(stats) {
+  clearContentDiv();
+
+  const title = newHTML("h1", "title");
+  title.innerText = `Question Performance Statistics for ${currentUser}:`
+
+  const list = newHTML("ul", "list");
+
+  for (const stat_topic in stats) {
+    topic_stats = newHTML("li", `${stat_topic.toLowerCase()}-stats`, list)
+    correct = stats[`${stat_topic}`]["number_correct"];
+    possible = stats[`${stat_topic}`]["number_possible"];
+    percentage = ((correct / possible) * 100).toFixed(1);
+    topic_stats.innerText =
+      `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`
+  }
+
+  backButton = newHTML("button", "back-to-main");
+  backButton.innerText = "Back to Main Menu";
+}
+
+function getStats() {
+  return fetch(`${BASE_URL}/encounters/${parseInt(userId)}`)
+    .then((response) => response.json());
+}
+
+function displayMainMenu(message) {
+  if(userId) {
+    clearContentDiv();;
+
+    const welcome = newHTML("h1", "welcome");
+    welcome.innerText = "Generic Quiz App";
+
+    const likeTo = newHTML("h3", "like-to");
+    likeTo.innerText = "Would you like to...";
+
+    const quizButton = newHTML("button", "quiz-button");
+    quizButton.innerText = "Take a Quiz";
+
+    const statsButton = newHTML("button", "stats-button");
+    statsButton.innerText = "See Your Topic Stats";
+
+    const logoutButton = newHTML("button", "logout-button");
+    logoutButton.innerText = "Logout";
+  } else {
+    showLogin(message);
+  }
+}
+
+function showLogin(loginErrorMessage = "") {
   clearContentDiv();
 
   welcome = newHTML("h1", "welcome");
@@ -335,6 +391,34 @@ function showLogin() {
 
   newUserButton = newHTML("button", "new-user-button");
   newUserButton.innerText = "New User";
+
+  errorMessage = newHTML("h3", "error-message");
+  errorMessage.innerText = loginErrorMessage;
+}
+
+function newUserPage() {
+  clearContentDiv();
+
+  welcome = newHTML("h1", "welcome");
+  welcome.innerText = "Welcome to another Quiz App!"
+
+  inst = newHTML("h3", "instructions");
+  inst.innerText = "Please enter your desired username and password";
+
+  uname = newHTML("input", "username");
+  uname.type = "textBox";
+  uname.value = "username";
+
+  newHTML("br", "br1");
+
+  password = newHTML("input", "password");
+  password.type = "password";
+  password.value = "password"
+
+  newHTML("br", "br2");
+
+  submitCredsButton = newHTML("button", "create-user-button");
+  submitCredsButton.innerText = "Create User";
 }
 
 function quizEndMessage(message) {
@@ -345,6 +429,49 @@ function quizEndMessage(message) {
   backButton.innerText = "Back to Main Menu";
 }
 
+function listeners() {
+  document.addEventListener("click", (e) => {
+    const id = e.target.id;
+    if (e.target.className == "choice") {
+      choice = id;
+      quiz.respondToSelection(choice[choice.length - 1]);
+    } else if (id == "make-quiz") {
+      getAndAdministerQuiz();
+    } else if (id == "quiz-button") {
+      setUpQuiz();
+    } else if (id == "logout-button") {
+      logout();
+    } else if (id == "login-button") {
+      login(document.querySelector("#username").value,
+        document.querySelector("#password").value);
+    } else if (id == "back-to-main") {
+      displayMainMenu();
+    } else if (id == "new-user-button") {
+      newUserPage();
+    } else if (id == "create-user-button") {
+      createUser(document.querySelector("#username").value,
+        document.querySelector("#password").value);
+    } else if (id == "stats-button") {
+      getAndDisplayStats();
+    }
+  })
+
+  document.addEventListener("keydown", (e) => {
+    if(e.keyCode === 13 && !!document.querySelector("#login-button")) {
+      login(document.querySelector("#username").value,
+        document.querySelector("#password").value);
+    } else if ((e.keyCode === 65 || e.keyCode === 49) && !!document.querySelector("#stem")) {
+      quiz.respondToSelection(1);
+    } else if ((e.keyCode === 66 || e.keyCode === 50) && !!document.querySelector("#stem")) {
+      quiz.respondToSelection(2);
+    } else if ((e.keyCode === 67 || e.keyCode === 51) && !!document.querySelector("#stem")) {
+      quiz.respondToSelection(3);
+    } else if ((e.keyCode === 68 || e.keyCode === 52) && !!document.querySelector("#stem")) {
+      quiz.respondToSelection(4);
+    }
+  })
+}
+
 // Program flow
 function setUpQuiz() {
   getAllTopics()
@@ -352,30 +479,9 @@ function setUpQuiz() {
 }
   // Prompt for Username
 
+listeners();
 // Log In User
-showLogin();
-// displayMainMenu(); is called at end of login()
-// Display Topics to Select From
-
-// get user input for topic selection and get and administer quiz
-// getAndAdministerQuiz() driven by event listener response to topic selection
-
-// set up Event Listener to process question responses
-document.addEventListener("click", (e) => {
-  const id = e.target.id;
-  if (e.target.className == "choice") {
-    choice = id;
-    quiz.respondToSelection(choice[choice.length - 1]);
-  } else if (id == "make-quiz") {
-    getAndAdministerQuiz();
-  } else if (id == "quiz-button") {
-    setUpQuiz();
-  } else if (id == "logout-button") {
-    logout();
-  } else if (id == "login-button") {
-    login(document.querySelector("#username").value,
-      document.querySelector("#password").value);
-  } else if (id == "back-to-main") {
-    displayMainMenu();
-  }
-})
+// showLogin();
+login("btate712", "temp");
+displayMainMenu();
+// displayMainMenu() is called at end of login()

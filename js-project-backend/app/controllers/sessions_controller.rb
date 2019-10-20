@@ -7,7 +7,7 @@ class SessionsController < ApplicationController
       session[:user_id] = user.id
       render json: { id: session[:user_id], username: user.username }
     else
-      render json: { message: "Authentication Failure" }
+      render json: { message: "Authentication Failed - Please check your username and password." }
     end
   end
 
