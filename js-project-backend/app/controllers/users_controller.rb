@@ -11,12 +11,15 @@ class UsersController < ApplicationController
   end
 
   def create
-    user = User.new(user_params(:username, :password))
-    if(User.save)
-      render json: { message: "success" }
+    user = User.new
+    user.username = params[:username]
+    user.password = params[:password]
+    if(user.save)
+      render json: { message: "Successfully created new user.  Please log in." }
     else
-      render json: { message: "fail - topic already exists" }
+      render json: { message: user.errors.messages.inspect }
     end
+  end
 
   def destroy
     def destroy
