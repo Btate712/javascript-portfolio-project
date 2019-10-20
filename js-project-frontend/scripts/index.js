@@ -121,22 +121,24 @@ function createNewTopic(topicName) {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({
-      topic_name: "Physics"
+      topic_name: topicName
     })
   }
 
-  fetch(`${BASE_URL}/topics`, newTopicRequest)
+  return fetch(`${BASE_URL}/topics`, newTopicRequest)
     .then((response) => response.json())
-    .then((json) => console.log(json));
+    .then((json) => json.message );
 }
 
 function getAllTopics() {
   topics = [];
   return fetch(`${BASE_URL}/topics`)
     .then((response) => response.json())
-    .then((json) => json.forEach((topic) => {
+    .then((json) => {
+      json.forEach((topic) => {
       topics.push(new Topic(topic.id, topic.name))
-    }));
+    })
+  });
 }
 
 // Quiz Functions
@@ -197,7 +199,6 @@ function logout() {
 
   return fetch(`${BASE_URL}/sessions/${userId}`, newSessionRequest)
     .then((response) => response.json())
-    .then((json) => console.log(json))
     .then(() => userId = undefined)
     .then(() => showLogin());
 }
@@ -259,10 +260,20 @@ function clearContentDiv() {
 
 function newTextInput(id, labelText, parentId = "#content.div") {
   newHTML("br", "break");
-  label = newHTML("label", `${id}-label`, parentId);
+  const label = newHTML("label", `${id}-label`, parentId);
   label.innerText = labelText;
-  text = newHTML("input", id, parentId);
+  const text = newHTML("input", id, parentId);
   text.type = "textBox";
+  label.setAttribute("for", id);
+}
+
+function newRadioInput(id, labelText, groupName, parentId = "#content.div") {
+  newHTML("br", "break");
+  const label = newHTML("label", "label");
+  label.innerText = labelText;
+  const choice = newHTML("input", id);
+  choice.type = "radio";
+  choice.setAttribute("name", groupName);
   label.setAttribute("for", id);
 }
 
@@ -440,31 +451,77 @@ function quizEndMessage(message) {
   backButton.innerText = "Back to Main Menu";
 }
 
+function createQuestion() {
+  const questionData = getQuestionData();
+
+  const newQuestionRequest = {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({ questionData })
+  }
+
+  fetch(`${BASE_URL}/questions`, newQuestionRequest)
+    .then((response) => response.json())
+    .then((json) => { console.log(json.message) });
+}
+
+function getQuestionData () {
+  questionObject = {};
+
+  const topicName = document.querySelector("input[name=topic-choice]:checked").id.slice(13);
+
+  if (topicName == "new-topic") {
+    questionObject['topicId'] = createNewTopic(document.querySelector("#new-topic-text").value);
+  } else {
+    topics.forEach((topic) => {
+      if (topic.name.toLowerCase() == topicName) {
+        questionObject['topicId'] = topic.id;
+      }
+    })
+  }
+
+  setTimeout(()=> console.log("waiting..."), 100);
+
+  questionObject["stem"] = document.querySelector("#question-stem").value;
+  questionObject["choice1"] = document.querySelector("#distractor-1").value;
+  questionObject["choice2"] = document.querySelector("#distractor-2").value;
+  questionObject["choice3"] = document.querySelector("#distractor-3").value;
+  questionObject["choice4"] = document.querySelector("#distractor-4").value;
+
+  questionObject['correctChoice'] = document.querySelector("input[name=answer-choice]:checked").id.slice(13);
+
+  return questionObject;
+}
+
 function newQuestionForm() {
   clearContentDiv();
 
   title = newHTML("h1", "title");
   title.innerText = "Create a New Question:";
 
+  inst2 = newHTML("p", "choose-topic");
+  inst2.innerText = "Question Topic: "
+
+  for (const topic of topics) {
+    newRadioInput(`radio-button-${topic.name.toLowerCase()}`,
+      topic.name, "topic-choice");
+  }
+  newRadioInput("radio-button-new-topic", "New Topic", "topic-choice");
+  text = newHTML("input", "new-topic-text");
+  text.type = "textBox";
+
+  newHTML("br", "break");
   newTextInput("question-stem", "Question Stem: ");
   newTextInput("distractor-1", "Choice 1: ");
   newTextInput("distractor-2", "Choice 2: ");
   newTextInput("distractor-3", "Choice 3: ");
   newTextInput("distractor-4", "Choice 4: ");
 
-  inst1 = newHTML("p", "correct-choice");
-  inst1.innerText = "Correct Answer:"
+  inst2 = newHTML("p", "correct-choice");
+  inst2.innerText = "Correct Answer:"
 
   for (let i = 1; i <=4; i++) {
-    console.log(i);
-
-    newHTML("br", "break");
-    const label = newHTML("label", `radio-button-label-${i}`);
-    label.innerText = `Choice ${i} `;
-    const choice = newHTML("input", `radio-button-${i}`);
-    choice.type = "radio";
-    choice.setAttribute("name", "answer-choice");
-    label.setAttribute("for", `radio-button-${i}`);
+    newRadioInput(`radio-button-${i}`, `Choice ${i}`, "answer-choice");
   }
 
   newHTML("br", "break");
@@ -498,7 +555,14 @@ function listeners() {
     } else if (id == "stats-button") {
       getAndDisplayStats();
     } else if (id == "new-question-button") {
-      newQuestionForm();
+      if(topics.length == 0) {
+        getAllTopics()
+          .then(() => newQuestionForm());
+      } else {
+        newQuestionForm();
+      }
+    } else if (id == "create-question-button") {
+      createQuestion();
     }
   })
 
@@ -506,6 +570,8 @@ function listeners() {
     if(e.keyCode === 13 && !!document.querySelector("#login-button")) {
       login(document.querySelector("#username").value,
         document.querySelector("#password").value);
+    } else if (e.keyCode === 13 && !!document.querySelector("#create-question-button")) {
+      createQuestion();
     } else if ((e.keyCode === 65 || e.keyCode === 49) && !!document.querySelector("#stem")) {
       quiz.respondToSelection(1);
     } else if ((e.keyCode === 66 || e.keyCode === 50) && !!document.querySelector("#stem")) {
@@ -520,8 +586,12 @@ function listeners() {
 
 // Program flow
 function setUpQuiz() {
-  getAllTopics()
-  .then(() => displayTopicList());
+  if (topics.length == 0) {
+    getAllTopics()
+      .then(() => displayTopicList());
+  } else {
+    displayTopicList();
+  }
 }
   // Prompt for Username
 

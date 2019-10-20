@@ -1,6 +1,6 @@
 class TopicsController < ApplicationController
-  before_action :require_login
-  
+  # before_action :require_login
+
   def index
     topics = Topic.all
     render json: topics, only: [:id, :name]
@@ -11,7 +11,7 @@ class TopicsController < ApplicationController
     topic.name = params[:topic_name]
     if !Topic.find_by(name: topic.name)
       topic.save
-      render json: { message: "success" }
+      render json: { message: topic.id }
     else
       render json: { message: "fail - topic already exists" }
     end
