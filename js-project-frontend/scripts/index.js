@@ -103,29 +103,6 @@ class Quiz {
 // Quiz Functions
 // requestQuiz takes topicIdsArray and numberOfQuestions and then builds and
 // sends a fetch request to get a list of quiz questions from the API.
-function requestQuiz(topicIdsArray, numberOfQuestions) {
-  const topicIds = topicIdsArray.join(',');
-  const questionIndexRequest = {
-    method: 'POST',
-    headers: { 'Content-type': 'application/json' },
-    body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
-  };
-
-  return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
-    .then((response) => response.json())
-    .then((json) => quiz = json.quiz);
-}
-
-function buildOOQuiz(questionObjectArray) {
-  const questionInstanceArray = [];
-  let index = 1;
-  for (const question of questionObjectArray) {
-    questionInstanceArray.push(new Question(question, index));
-    index++;
-  }
-
-  return new Quiz(questionInstanceArray);
-}
 
 // Topic Functions
 function deleteTopic(topicId) {
@@ -160,6 +137,40 @@ function getAllTopics() {
     .then((json) => json.forEach((topic) => {
       topics.push(new Topic(topic.id, topic.name))
     }));
+}
+
+// Quiz Functions
+function getAndAdministerQuiz() {
+  const selectedTopics = getTopicList();
+  const numberOfQuestions = getNumberofQuestions();
+  buildQuestionDiv();
+  requestQuiz(selectedTopics, numberOfQuestions)
+    .then((questionArray) => quiz = instantiateQuiz(questionArray))
+    .then(() => quiz.askQuestion());
+}
+
+function requestQuiz(topicIdsArray, numberOfQuestions) {
+  const topicIds = topicIdsArray.join(',');
+  const questionIndexRequest = {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
+  };
+
+  return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
+    .then((response) => response.json())
+    .then((json) => questionArray = json.quiz);
+}
+
+function instantiateQuiz(questionObjectArray) {
+  const questionInstanceArray = [];
+  let index = 1;
+  for (const question of questionObjectArray) {
+    questionInstanceArray.push(new Question(question, index));
+    index++;
+  }
+
+  return new Quiz(questionInstanceArray);
 }
 
 // User Functions
@@ -207,6 +218,31 @@ function createUser(username, password) {
       msg = newHTML("h1", "new-user-message")
       msg.innerText = json.message;
     });
+}
+
+function newUserPage() {
+  clearContentDiv();
+
+  welcome = newHTML("h1", "welcome");
+  welcome.innerText = "Welcome to another Quiz App!"
+
+  inst = newHTML("h3", "instructions");
+  inst.innerText = "Please enter your desired username and password";
+
+  uname = newHTML("input", "username");
+  uname.type = "textBox";
+  uname.value = "username";
+
+  newHTML("br", "br1");
+
+  password = newHTML("input", "password");
+  password.type = "password";
+  password.value = "password"
+
+  newHTML("br", "br2");
+
+  submitCredsButton = newHTML("button", "create-user-button");
+  submitCredsButton.innerText = "Create User";
 }
 
 // Helper Functions
@@ -289,9 +325,11 @@ function getTopicList() {
       topicIdList.push(parseInt(input.id.slice(5)))
     }
   }
-  if (topicIdList == []) { // select all topics if none were checked
+  if (topicIdList.length == 0) { // select all topics if none were checked
     for (input of inputs) {
-      topicIdList.push(parseInt(input.id.slice(5)))
+      if(input.type == "checkbox") {
+        topicIdList.push(parseInt(input.id.slice(5)))
+      }
     }
   }
   return topicIdList;
@@ -299,16 +337,6 @@ function getTopicList() {
 
 function getNumberofQuestions() {
   return parseInt(document.querySelector("#num-questions").value);
-}
-
-function getAndAdministerQuiz() {
-  const selectedTopics = getTopicList();
-  const numberOfQuestions = getNumberofQuestions();
-  buildQuestionDiv();
-  requestQuiz(selectedTopics, numberOfQuestions)
-    .then((questionArray) => buildOOQuiz(questionArray))
-    .then((ooQuizResult) => quiz = ooQuizResult)
-    .then(() => quiz.askQuestion());
 }
 
 function getAndDisplayStats() {
@@ -394,31 +422,6 @@ function showLogin(loginErrorMessage = "") {
 
   errorMessage = newHTML("h3", "error-message");
   errorMessage.innerText = loginErrorMessage;
-}
-
-function newUserPage() {
-  clearContentDiv();
-
-  welcome = newHTML("h1", "welcome");
-  welcome.innerText = "Welcome to another Quiz App!"
-
-  inst = newHTML("h3", "instructions");
-  inst.innerText = "Please enter your desired username and password";
-
-  uname = newHTML("input", "username");
-  uname.type = "textBox";
-  uname.value = "username";
-
-  newHTML("br", "br1");
-
-  password = newHTML("input", "password");
-  password.type = "password";
-  password.value = "password"
-
-  newHTML("br", "br2");
-
-  submitCredsButton = newHTML("button", "create-user-button");
-  submitCredsButton.innerText = "Create User";
 }
 
 function quizEndMessage(message) {
