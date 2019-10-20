@@ -72,7 +72,7 @@ class Quiz {
     if(!this.complete()) {
       this.askQuestion();
     } else {
-      console.log(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`)
+      quizEndMessage(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`);
       this.storeQuizResults();
     }
   }
@@ -91,8 +91,7 @@ class Quiz {
     };
 
     fetch(`${BASE_URL}/encounters/`, encounterRequest)
-      .then((response) => response.json())
-      .then((json) => displayMainMenu());
+      .then((response) => response.json());
   }
 
   complete() {
@@ -155,12 +154,13 @@ function createNewTopic(topicName) {
 }
 
 function getAllTopics() {
+  topics = [];
   return fetch(`${BASE_URL}/topics`)
     .then((response) => response.json())
     .then((json) => json.forEach((topic) => {
       topics.push(new Topic(topic.id, topic.name))
     }));
-  }
+}
 
 // User Functions
 function login(username, password) {
@@ -337,6 +337,14 @@ function showLogin() {
   newUserButton.innerText = "New User";
 }
 
+function quizEndMessage(message) {
+  m = newHTML("h1", "quiz-message");
+  m.innerText = message;
+
+  backButton = newHTML("button", "back-to-main");
+  backButton.innerText = "Back to Main Menu";
+}
+
 // Program flow
 function setUpQuiz() {
   getAllTopics()
@@ -367,5 +375,7 @@ document.addEventListener("click", (e) => {
   } else if (id == "login-button") {
     login(document.querySelector("#username").value,
       document.querySelector("#password").value);
+  } else if (id == "back-to-main") {
+    displayMainMenu();
   }
 })
