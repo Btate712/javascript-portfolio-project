@@ -257,8 +257,13 @@ function clearContentDiv() {
   document.querySelector("#content-div").innerText = "";
 }
 
-function debounce() {
-
+function newTextInput(id, labelText, parentId = "#content.div") {
+  newHTML("br", "break");
+  label = newHTML("label", `${id}-label`, parentId);
+  label.innerText = labelText;
+  text = newHTML("input", id, parentId);
+  text.type = "textBox";
+  label.setAttribute("for", id);
 }
 
 // Display / DOM interaction (View)
@@ -386,6 +391,9 @@ function displayMainMenu(message) {
     const statsButton = newHTML("button", "stats-button");
     statsButton.innerText = "See Your Topic Stats";
 
+    const newQuestionButton = newHTML("button", "new-question-button");
+    newQuestionButton.innerText = "Create a new Question";
+
     const logoutButton = newHTML("button", "logout-button");
     logoutButton.innerText = "Logout";
   } else {
@@ -432,6 +440,39 @@ function quizEndMessage(message) {
   backButton.innerText = "Back to Main Menu";
 }
 
+function newQuestionForm() {
+  clearContentDiv();
+
+  title = newHTML("h1", "title");
+  title.innerText = "Create a New Question:";
+
+  newTextInput("question-stem", "Question Stem: ");
+  newTextInput("distractor-1", "Choice 1: ");
+  newTextInput("distractor-2", "Choice 2: ");
+  newTextInput("distractor-3", "Choice 3: ");
+  newTextInput("distractor-4", "Choice 4: ");
+
+  inst1 = newHTML("p", "correct-choice");
+  inst1.innerText = "Correct Answer:"
+
+  for (let i = 1; i <=4; i++) {
+    console.log(i);
+
+    newHTML("br", "break");
+    const label = newHTML("label", `radio-button-label-${i}`);
+    label.innerText = `Choice ${i} `;
+    const choice = newHTML("input", `radio-button-${i}`);
+    choice.type = "radio";
+    choice.setAttribute("name", "answer-choice");
+    label.setAttribute("for", `radio-button-${i}`);
+  }
+
+  newHTML("br", "break");
+
+  btn = newHTML("button", "create-question-button");
+  btn.innerText = "Create New Question";
+}
+
 function listeners() {
   document.addEventListener("click", (e) => {
     const id = e.target.id;
@@ -456,6 +497,8 @@ function listeners() {
         document.querySelector("#password").value);
     } else if (id == "stats-button") {
       getAndDisplayStats();
+    } else if (id == "new-question-button") {
+      newQuestionForm();
     }
   })
 

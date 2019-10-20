@@ -1,4 +1,6 @@
 class QuizzesController < ApplicationController
+  before_action :require_login
+  
   def create
     topic_ids = params[:topicIds].split(",")
     number_of_questions = params[:numberOfQuestions]

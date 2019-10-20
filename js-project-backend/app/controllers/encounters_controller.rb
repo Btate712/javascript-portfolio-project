@@ -1,4 +1,6 @@
 class EncountersController < ApplicationController
+  before_action :require_login
+  
   def create
     failed = 0
     user_id = params[:userId]
