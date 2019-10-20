@@ -5,7 +5,7 @@ class SessionsController < ApplicationController
 
     if user && user.authenticate(params[:password])
       session[:user_id] = user.id
-      render json: { id: session[:user_id] }
+      render json: { id: session[:user_id], username: user.username }
     else
       render json: { message: "Authentication Failure" }
     end

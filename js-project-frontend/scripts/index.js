@@ -4,11 +4,8 @@ const BASE_URL = "http://localhost:3000";
 // Global (Window) Variables:
 let quiz;
 let userId;
+let currentUser;
 let topics = [];
-let quizTime = false;
-let topicSelectionTime = false;
-let loginTime = false;
-let newUserTime = false;
 
 // Classes (Model)
 class Topic {
@@ -81,7 +78,6 @@ class Quiz {
   }
 
   storeQuizResults() {
-    quizTime = false;
     const questionResults = [];
     for (const question of this.questions) {
       questionResults.push( {'id': question.id, 'choice': question.choiceSelected} );
@@ -96,7 +92,7 @@ class Quiz {
 
     fetch(`${BASE_URL}/encounters/`, encounterRequest)
       .then((response) => response.json())
-      .then((json) => console.log(json.message));
+      .then((json) => displayMainMenu());
   }
 
   complete() {
@@ -174,12 +170,41 @@ function login(username, password) {
     body: JSON.stringify( { username: username, password: password } )
   };
 
-  fetch(`${BASE_URL}/sessions/`, newSessionRequest)
+  return fetch(`${BASE_URL}/sessions/`, newSessionRequest)
     .then((response) => response.json())
-    .then((json) => userId = json.id);
+    .then((json) => userId = json.id)
+    .then((json) => currentUser = json.username);
+}
+
+// Helper Functions
+function newHTML(tag, id, parentId = "#content-div") {
+  const temp = document.createElement(tag);
+  temp.id = id;
+  document.querySelector("#content-div").appendChild(temp);
+  return temp;
+}
+
+function clearContentDiv() {
+  document.querySelector("#content-div").innerText = "";
 }
 
 // Display / DOM interaction (View)
+function buildQuestionDiv() {
+  document.querySelector("#content-div").innerHTML = "";
+
+  newHTML("div", "question");
+  newHTML("h1", "question-number", "#question");
+  newHTML("h3", "stem", "#question");
+  const choice1 = newHTML("h3", "choice1", "#question")
+  choice1.className = "choice";
+  const choice2 = newHTML("h3", "choice2", "#question")
+  choice2.className = "choice";
+  const choice3 = newHTML("h3", "choice3", "#question")
+  choice3.className = "choice";
+  const choice4 = newHTML("h3", "choice4", "#question")
+  choice4.className = "choice";
+}
+
 function displayQuestion(question) {
   document.querySelector("#question-number").innerText = `Question #${question.questionNumber}`;
   document.querySelector("#stem").innerText = question.stem;
@@ -189,53 +214,16 @@ function displayQuestion(question) {
   document.querySelector("#choice4").innerText = `D. ${question.choices[3]}`;
 }
 
-function buildQuestionDiv() {
-  document.querySelector("body").innerHTML = "";
-
-  questionDiv = document.createElement("div");
-  questionDiv.id = "question";
-  document.querySelector("body").appendChild(questionDiv);
-
-  questionNumber = document.createElement("h1");
-  questionNumber.id = "question-number";
-  questionDiv.appendChild(questionNumber);
-
-  stem = document.createElement("h3");
-  stem.id="stem";
-  questionDiv.appendChild(stem);
-
-  choice1 = document.createElement("h3");
-  choice1.id = "choice1";
-  choice1.className = "choice";
-  questionDiv.appendChild(choice1);
-
-  choice2 = document.createElement("h3");
-  choice2.id = "choice2";
-  choice2.className = "choice";
-  questionDiv.appendChild(choice2);
-
-  choice3 = document.createElement("h3");
-  choice3.id = "choice3";
-  choice3.className = "choice";
-  questionDiv.appendChild(choice3);
-
-  choice4 = document.createElement("h3");
-  choice4.id = "choice4";
-  choice4.className = "choice";
-  questionDiv.appendChild(choice4);
-
-  return questionDiv;
-}
-
 function displayTopicList() {
-  document.querySelector("body").innerHTML = "";
+  clearContentDiv();
 
-  const div = document.createElement("div");
-  div.id = "content-div";
-  document.querySelector("body").appendChild(div);
+  const inst1 = newHTML("h2", "inst1");
+  inst1.innerText = "Please select your quiz topics and the number of questions you'd like to answer...";
 
-  const ul = document.createElement("ul");
-  document.querySelector("#content-div").appendChild(ul);
+  const inst2 = newHTML("h3", "inst2");
+  inst2.innerText = "If you do not select any topics, all topics will be included.";
+
+  const ul = newHTML("ul", "list");
 
   for (const topic of topics) {
     const li = document.createElement("li");
@@ -247,22 +235,14 @@ function displayTopicList() {
     li.appendChild(ck);
   }
 
-  const num = document.createElement("input");
-  num.type = "textbox";
-  num.id = "num-questions";
-  const p = document.createElement("p");
+  const p = newHTML("p", "label")
   p.innerText = "Number of Questions:";
-  div.appendChild(p);
+  const num = newHTML("input", "num-questions");
+  num.type = "textbox";
   num.value = "5";
-  div.appendChild(num);
 
-  const button = document.createElement("button");
-  button.id = "make-quiz";
+  const button = newHTML("button", "make-quiz")
   button.innerText = "Create Quiz";
-  button.style = "block";
-  div.appendChild(button);
-
-  topicSelectionTime = true;
 }
 
 function getTopicList() {
@@ -292,30 +272,53 @@ function getAndAdministerQuiz() {
   requestQuiz(selectedTopics, numberOfQuestions)
     .then((questionArray) => buildOOQuiz(questionArray))
     .then((ooQuizResult) => quiz = ooQuizResult)
-    .then(() => quizTime = true)
     .then(() => quiz.askQuestion());
 }
+
+function displayMainMenu() {
+  document.querySelector("#content-div").innerText = "";
+
+  const welcome = newHTML("h1", "welcome");
+  welcome.innerText = "Welcome to another Quiz App!";
+
+  const likeTo = newHTML("h3", "like-to");
+  likeTo.innerText = "Would you like to...";
+
+  const quizButton = newHTML("button", "quiz-button");
+  quizButton.innerText = "Take a Quiz";
+
+  const statsButton = newHTML("button", "stats-button");
+  statsButton.innerText = "See Your Topic Stats";
+
+  const logoutButton = newHTML("button", "logout-button");
+  logoutButton.innerText = "Logout";
+}
+
 // Program flow
+function setUpQuiz() {
+  getAllTopics()
+  .then(() => displayTopicList());
+}
   // Prompt for Username
 
 // Log In User
-login("btate712", "temp");
+login("btate712", "temp")
 
+displayMainMenu();
 // Display Topics to Select From
-getAllTopics()
-  .then(() => displayTopicList());
 
 // get user input for topic selection and get and administer quiz
 // getAndAdministerQuiz() driven by event listener response to topic selection
 
 // set up Event Listener to process question responses
 document.addEventListener("click", (e) => {
-  if (quizTime && e.target.className == "choice") {
+  if (e.target.className == "choice") {
     choice = e.target.id;
     quiz.respondToSelection(choice[choice.length - 1]);
-  }
-  if (topicSelectionTime && e.target.id == "make-quiz") {
-    topicSelectionTime = false;
+  } else if (e.target.id == "make-quiz") {
     getAndAdministerQuiz();
+  } else if (e.target.id == "quiz-button") {
+    setUpQuiz();
   }
+
 })
