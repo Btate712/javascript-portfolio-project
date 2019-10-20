@@ -172,8 +172,23 @@ function login(username, password) {
 
   return fetch(`${BASE_URL}/sessions/`, newSessionRequest)
     .then((response) => response.json())
-    .then((json) => userId = json.id)
-    .then((json) => currentUser = json.username);
+    .then((json) => { console.log(json);
+      userId = json.id;
+      currentUser = json.username})
+    .then(() => displayMainMenu());
+}
+
+function logout() {
+  const newSessionRequest = {
+    method: 'DELETE',
+    headers: { 'Content-type': 'application/json' }
+  };
+
+  return fetch(`${BASE_URL}/sessions/${userId}`, newSessionRequest)
+    .then((response) => response.json())
+    .then((json) => console.log(json))
+    .then(() => userId = undefined)
+    .then(() => showLogin());
 }
 
 // Helper Functions
@@ -294,6 +309,34 @@ function displayMainMenu() {
   logoutButton.innerText = "Logout";
 }
 
+function showLogin() {
+  clearContentDiv();
+
+  welcome = newHTML("h1", "welcome");
+  welcome.innerText = "Welcome to another Quiz App!"
+
+  inst = newHTML("h3", "instructions");
+  inst.innerText = "Please enter your username and password or create a new account";
+
+  uname = newHTML("input", "username");
+  uname.type = "textBox";
+  uname.value = "username";
+
+  newHTML("br", "br1");
+
+  password = newHTML("input", "password");
+  password.type = "password";
+  password.value = "password"
+
+  newHTML("br", "br2");
+
+  submitCredsButton = newHTML("button", "login-button");
+  submitCredsButton.innerText = "Log In";
+
+  newUserButton = newHTML("button", "new-user-button");
+  newUserButton.innerText = "New User";
+}
+
 // Program flow
 function setUpQuiz() {
   getAllTopics()
@@ -302,9 +345,8 @@ function setUpQuiz() {
   // Prompt for Username
 
 // Log In User
-login("btate712", "temp")
-
-displayMainMenu();
+showLogin();
+// displayMainMenu(); is called at end of login()
 // Display Topics to Select From
 
 // get user input for topic selection and get and administer quiz
@@ -312,13 +354,18 @@ displayMainMenu();
 
 // set up Event Listener to process question responses
 document.addEventListener("click", (e) => {
+  const id = e.target.id;
   if (e.target.className == "choice") {
-    choice = e.target.id;
+    choice = id;
     quiz.respondToSelection(choice[choice.length - 1]);
-  } else if (e.target.id == "make-quiz") {
+  } else if (id == "make-quiz") {
     getAndAdministerQuiz();
-  } else if (e.target.id == "quiz-button") {
+  } else if (id == "quiz-button") {
     setUpQuiz();
+  } else if (id == "logout-button") {
+    logout();
+  } else if (id == "login-button") {
+    login(document.querySelector("#username").value,
+      document.querySelector("#password").value);
   }
-
 })
