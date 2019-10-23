@@ -125,13 +125,14 @@ class User {
         this.token = json.access_token;
         displayMainMenu(json.message)});
   }
-}// Global Constants:
+}
+
+// Global Constants:
 const BASE_URL = "http://localhost:3000";
 
 // Global (Window) Variables:
 let quiz;
 let user = new User();
-let currentUser;
 let topics = [];
 
 // Interface Methods (Controller)
@@ -216,18 +217,6 @@ function instantiateQuiz(questionObjectArray) {
   }
 
   return new Quiz(questionInstanceArray);
-}
-
-function logout() {
-  const newSessionRequest = {
-    method: 'DELETE',
-    headers: { 'Content-type': 'application/json' }
-  };
-
-  return fetch(`${BASE_URL}/sessions/${userId}`, newSessionRequest)
-    .then((response) => response.json())
-    .then(() => userId = undefined)
-    .then(() => showLogin());
 }
 
 function createUser(username, email, password) {
@@ -393,7 +382,7 @@ function displayStats(stats) {
   clearContentDiv();
 
   const title = newHTML("h1", "title");
-  title.innerText = `Question Performance Statistics for ${currentUser}:`
+  title.innerText = `Question Performance Statistics for ${user.username}:`
 
   const list = newHTML("ul", "list");
 
