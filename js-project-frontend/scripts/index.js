@@ -406,21 +406,32 @@ class APICommunicator {
 
   getAllTopics() {
     topics = [];
-    console.log(JSON.stringify(this.headers));
     return fetch(`${BASE_URL}/topics`, { headers: this.headers })
       .then((response) => response.json())
       .then((json) => {
-        console.log(json);
         json.forEach((topic) => {
         topics.push(new Topic(topic.id, topic.name))
       })
     });
   }
+
+  requestQuiz(topicIdsArray, numberOfQuestions) {
+    const topicIds = topicIdsArray.join(',');
+    const questionIndexRequest = {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
+    };
+
+    return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
+      .then((response) => response.json())
+      .then((json) => json.quiz);
+  }
 }
 
 // Global (Window) Variables:
 let quiz;
-let user = new User();
+const user = new User();
 let topics = [];
 const BASE_URL = "http://localhost:3000";
 
@@ -461,23 +472,12 @@ function getAndAdministerQuiz() {
   const selectedTopics = View.getTopicList();
   const numberOfQuestions = View.getNumberofQuestions();
   View.buildQuestionDiv();
-  requestQuiz(selectedTopics, numberOfQuestions)
+  apiComm.requestQuiz(selectedTopics, numberOfQuestions)
     .then((questionArray) => quiz = instantiateQuiz(questionArray))
     .then(() => quiz.askQuestion());
 }
 
-function requestQuiz(topicIdsArray, numberOfQuestions) {
-  const topicIds = topicIdsArray.join(',');
-  const questionIndexRequest = {
-    method: 'POST',
-    headers: { 'Content-type': 'application/json', 'Authorization': `Bearers ${user.token}` },
-    body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
-  };
 
-  return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
-    .then((response) => response.json())
-    .then((json) => questionArray = json.quiz);
-}
 
 function instantiateQuiz(questionObjectArray) {
   const questionInstanceArray = [];
