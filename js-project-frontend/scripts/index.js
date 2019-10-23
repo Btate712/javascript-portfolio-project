@@ -128,6 +128,7 @@ class User {
       .then((response) => response.json())
       .then((json) => {
         this.token = json.access_token;
+        apiComm.setAuthorizationHeader(this.token);
         mainMenu()});
   }
 }
@@ -391,6 +392,32 @@ class View {
   }
 }
 
+class APICommunicator {
+  constructor() {
+    this._headers = { "Content-type": "application/json" };
+  }
+
+  get headers() {
+    return this._headers;
+  }
+
+  setAuthorizationHeader(token) { this._headers["Authorization"] = `Bearers ${token}`
+  }
+
+  getAllTopics() {
+    topics = [];
+    console.log(JSON.stringify(this.headers));
+    return fetch(`${BASE_URL}/topics`, { headers: this.headers })
+      .then((response) => response.json())
+      .then((json) => {
+        console.log(json);
+        json.forEach((topic) => {
+        topics.push(new Topic(topic.id, topic.name))
+      })
+    });
+  }
+}
+
 // Global (Window) Variables:
 let quiz;
 let user = new User();
@@ -398,6 +425,8 @@ let topics = [];
 const BASE_URL = "http://localhost:3000";
 
 // Topic Functions
+
+
 function deleteTopic(topicId) {
   const topicDeleteRequest = {
     method: 'DELETE',
@@ -425,21 +454,7 @@ function createNewTopic(topicName) {
     .then((json) => json.message );
 }
 
-function getAllTopics() {
-  topics = [];
-  return fetch(`${BASE_URL}/topics`,
-    {
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': `Bearers ${user.token}` }
-    })
-    .then((response) => response.json())
-    .then((json) => {
-      json.forEach((topic) => {
-      topics.push(new Topic(topic.id, topic.name))
-    })
-  });
-}
+
 
 // Quiz Functions
 function getAndAdministerQuiz() {
@@ -613,10 +628,10 @@ function listeners() {
 // Program flow
 function setUpQuiz() {
   if (topics.length == 0) {
-    getAllTopics()
+    apiComm.getAllTopics()
       .then(() => View.displayTopicList());
   } else {
-    displayTopicList();
+    View.displayTopicList();
   }
 }
 
@@ -635,7 +650,8 @@ function getAndDisplayStats() {
   }
 
 listeners();
-view = new View();
+const view = new View();
+const apiComm = new APICommunicator();
 
 user.username = "btate712";
 user.login("temp");
