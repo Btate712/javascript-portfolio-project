@@ -401,7 +401,7 @@ class View {
     title.innerText = "Topics:";
 
     for (const topic of topics) {
-      const t = this.newHTML("h3", `topic${topic.id}`);
+      const t = this.newHTML("h3", `topic-${topic.id}`);
       t.innerHTML = `${topic.name}&nbsp&nbsp`;
       const btn = this.newHTML("button", `delete-topic-${topic.id}`);
       btn.className = "delete-topic-button";
@@ -457,7 +457,7 @@ class APICommunicator {
       headers: this.headers,
     }
 
-    fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
+    return fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
       .then((response) => response.json())
       .then((json) => console.log(json));
   }
@@ -499,7 +499,17 @@ function getAndAdministerQuiz() {
     .then(() => quiz.askQuestion());
 }
 
-
+function removeTopic(id) {
+  apiComm.deleteTopic(id)
+    .then(() => {
+      let indexToRemove;
+      for (let i = 0; i < topics.length; i++) {
+        if (topics[i].id == id) { indexToRemove = i }
+      }
+      topics.splice(indexToRemove, 1);
+      mainMenu();
+    })
+}
 
 function instantiateQuiz(questionObjectArray) {
   const questionInstanceArray = [];
@@ -628,6 +638,9 @@ function listeners() {
       createQuestion();
     } else if (id == "topic-index-button") {
       showTopics();
+    } else if (e.target.className == "delete-topic-button") {
+      console.log(e.target);
+      removeTopic(parseInt(id.slice(13)));
     }
   })
 
