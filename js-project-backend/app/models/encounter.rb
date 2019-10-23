@@ -2,7 +2,7 @@ class Encounter < ApplicationRecord
   belongs_to :user
   belongs_to :question
 
-  def self.stats(user_id) #return stats for user with the followign format:
+  def self.stats(user_id) #return stats for user with the following format:
     # { topic_1: {number_correct: xxx, number_possible: xxx },
     #   topic_2: {number_correct: xxx, number_possible: xxx },
     #   topic... etc }

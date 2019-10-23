@@ -50,7 +50,7 @@ class Quiz {
   askQuestion() {
     let numberCorrect = 0;
     const question = this.questions[this._currentQuestionIndex];
-    displayQuestion(question);
+    View.displayQuestion(question);
   }
 
   respondToSelection(selection) {
@@ -63,7 +63,7 @@ class Quiz {
     if(!this.complete()) {
       this.askQuestion();
     } else {
-      quizEndMessage(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`);
+      View.quizEndMessage(`Quiz complete. ${this._numberCorrect} out of ${this.questions.length} correct.`);
       this.storeQuizResults();
     }
   }
@@ -73,7 +73,7 @@ class Quiz {
     for (const question of this.questions) {
       questionResults.push( {'id': question.id, 'choice': question.choiceSelected} );
     }
-    const body = { "userId": userId, 'questions': questionResults };
+    const body = { "username": user.username, 'questions': questionResults };
 
     const encounterRequest = {
       method: 'POST',
@@ -105,9 +105,14 @@ class User {
     return this._token;
   }
 
+  set username(name) {
+    this._username = name;
+  }
+
   set token(token) {
     this._token = token;
   }
+
   loggedIn() {
     return !!this.token
   }
@@ -123,22 +128,274 @@ class User {
       .then((response) => response.json())
       .then((json) => {
         this.token = json.access_token;
-        displayMainMenu(json.message)});
+        mainMenu()});
   }
 }
 
-// Global Constants:
-const BASE_URL = "http://localhost:3000";
+class View {
+  constructor() {  }
+
+  static buildQuestionDiv() {
+    document.querySelector("#content-div").innerHTML = "";
+
+    this.newHTML("h1", "question-number");
+    this.newHTML("h3", "stem");
+    const choice1 = this.newHTML("h3", "choice1")
+    choice1.className = "choice";
+    const choice2 = this.newHTML("h3", "choice2")
+    choice2.className = "choice";
+    const choice3 = this.newHTML("h3", "choice3")
+    choice3.className = "choice";
+    const choice4 = this.newHTML("h3", "choice4")
+    choice4.className = "choice";
+  }
+
+  static displayQuestion(question) {
+    document.querySelector("#question-number").innerText = `Question #${question.questionNumber}`;
+    document.querySelector("#stem").innerText = question.stem;
+    document.querySelector("#choice1").innerText = `A. ${question.choices[0]}`;
+    document.querySelector("#choice2").innerText = `B. ${question.choices[1]}`;
+    document.querySelector("#choice3").innerText = `C. ${question.choices[2]}`;
+    document.querySelector("#choice4").innerText = `D. ${question.choices[3]}`;
+  }
+
+  static displayTopicList() {
+    this.clearContentDiv();
+
+    const inst1 = this.newHTML("h2", "inst1");
+    inst1.innerText = "Please select your quiz topics and the number of questions you'd like to answer...";
+
+    const inst2 = this.newHTML("h3", "inst2");
+    inst2.innerText = "If you do not select any topics, all topics will be included.";
+
+    const ul = this.newHTML("ul", "list");
+
+    for (const topic of topics) {
+      const li = document.createElement("li");
+      li.innerText = topic.name;
+      ul.appendChild(li);
+      const ck = document.createElement('input');
+      ck.type = "checkbox";
+      ck.id = `topic${topic.id}`
+      li.appendChild(ck);
+    }
+
+    const p = this.newHTML("p", "label")
+    p.innerText = "Number of Questions:";
+    const num = this.newHTML("input", "num-questions");
+    num.type = "textbox";
+    num.value = "5";
+
+    const button = this.newHTML("button", "make-quiz")
+    button.innerText = "Create Quiz";
+  }
+
+  static getTopicList() {
+    const topicIdList = [];
+    const inputs = document.querySelectorAll("input");
+    for (const input of inputs) {
+      if(input.type == "checkbox" && input.checked) {
+        topicIdList.push(parseInt(input.id.slice(5)))
+      }
+    }
+    if (topicIdList.length == 0) { // select all topics if none were checked
+      for (let input of inputs) {
+        if(input.type == "checkbox") {
+          topicIdList.push(parseInt(input.id.slice(5)))
+        }
+      }
+    }
+    return topicIdList;
+  }
+
+  static getNumberofQuestions() {
+    return parseInt(document.querySelector("#num-questions").value);
+  }
+
+  static displayStats(stats) {
+    this.clearContentDiv();
+
+    const title = this.newHTML("h1", "title");
+    title.innerText = `Question Performance Statistics for ${user.username}:`
+
+    const list = this.newHTML("ul", "list");
+
+    for (const stat_topic in stats) {
+      const topic_stats = this.newHTML("li", `${stat_topic.toLowerCase()}-stats`, list)
+      const correct = stats[`${stat_topic}`]["number_correct"];
+      const possible = stats[`${stat_topic}`]["number_possible"];
+      const percentage = ((correct / possible) * 100).toFixed(1);
+      topic_stats.innerText =
+        `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`
+    }
+
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+  }
+
+  static displayMainMenu(message) {
+    //if(user.loggedIn()) {
+    this.clearContentDiv();
+
+    const welcome = this.newHTML("h1", "welcome");
+    welcome.innerText = "Generic Quiz App";
+
+    const likeTo = this.newHTML("h3", "like-to");
+    likeTo.innerText = "Would you like to...";
+
+    const quizButton = this.newHTML("button", "quiz-button");
+    quizButton.innerText = "Take a Quiz";
+
+    const statsButton = this.newHTML("button", "stats-button");
+    statsButton.innerText = "See Your Topic Stats";
+
+    const newQuestionButton = this.newHTML("button", "new-question-button");
+    newQuestionButton.innerText = "Create a new Question";
+  }
+
+  static showLogin(loginErrorMessage = "") {
+    this.clearContentDiv();
+
+    welcome = this.newHTML("h1", "welcome");
+    welcome.innerText = "Welcome to another Quiz App!"
+
+    inst = this.newHTML("h3", "instructions");
+    inst.innerText = "Please enter your username and password or create a new account";
+
+    uname = this.newHTML("input", "username");
+    uname.type = "textBox";
+    uname.value = "username";
+
+    this.newHTML("br", "br1");
+
+    password = this.newHTML("input", "password");
+    password.type = "password";
+    password.value = "password"
+
+    this.newHTML("br", "br2");
+
+    submitCredsButton = this.newHTML("button", "login-button");
+    submitCredsButton.innerText = "Log In";
+
+    newUserButton = this.newHTML("button", "new-user-button");
+    newUserButton.innerText = "New User";
+
+    errorMessage = this.newHTML("h3", "error-message");
+    errorMessage.innerText = loginErrorMessage;
+  }
+
+  static quizEndMessage(message) {
+    const m = this.newHTML("h1", "quiz-message");
+    m.innerText = message;
+
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+  }
+
+  static newUserPage() {
+    this.clearContentDiv();
+
+    welcome = this.newHTML("h1", "welcome");
+    welcome.innerText = "Welcome to another Quiz App!"
+
+    inst = this.newHTML("h3", "instructions");
+    inst.innerText = "Please enter your desired username and password";
+
+    uname = newTextInput("username", "Username: ");
+
+    email = newTextInput("email", "Email: ");
+
+    this.newHTML("br", "br1");
+
+    const label = this.newHTML("label", `password-label`);
+    label.innerText = "Password: ";
+    password = this.newHTML("input", "password");
+    password.type = "password";
+    label.setAttribute("for", "password");
+
+    this.newHTML("br", "br2");
+
+    submitCredsButton = this.newHTML("button", "create-user-button");
+    submitCredsButton.innerText = "Create User";
+  }
+
+  static clearContentDiv() {
+    document.querySelector("#content-div").innerText = "";
+  }
+
+  static newHTML(tag, id, parentId = "#content-div") {
+    const temp = document.createElement(tag);
+    temp.id = id;
+    document.querySelector("#content-div").appendChild(temp);
+    return temp;
+  }
+
+  static newTextInput(id, labelText, parentId = "#content.div") {
+    this.newHTML("br", "break");
+    const label = this.newHTML("label", `${id}-label`, parentId);
+    label.innerText = labelText;
+    const text = this.newHTML("input", id, parentId);
+    text.type = "textBox";
+    label.setAttribute("for", id);
+  }
+
+  static newRadioInput(id, labelText, groupName, parentId = "#content.div") {
+    this.newHTML("br", "break");
+    const label = this.newHTML("label", "label");
+    label.innerText = labelText;
+    const choice = this.newHTML("input", id);
+    choice.type = "radio";
+    choice.setAttribute("name", groupName);
+    label.setAttribute("for", id);
+  }
+
+  static newQuestionForm() {
+    this.clearContentDiv();
+
+    const title = this.newHTML("h1", "title");
+    title.innerText = "Create a New Question:";
+
+    const inst2 = this.newHTML("p", "choose-topic");
+    inst2.innerText = "Question Topic: "
+
+    for (const topic of topics) {
+      this.newRadioInput(`radio-button-${topic.name.toLowerCase()}`,
+        topic.name, "topic-choice");
+    }
+    this.newRadioInput("radio-button-new-topic", "New Topic", "topic-choice");
+    const text = this.newHTML("input", "new-topic-text");
+    text.type = "textBox";
+
+    this.newHTML("br", "break");
+    this.newTextInput("question-stem", "Question Stem: ");
+    this.newTextInput("distractor-1", "Choice 1: ");
+    this.newTextInput("distractor-2", "Choice 2: ");
+    this.newTextInput("distractor-3", "Choice 3: ");
+    this.newTextInput("distractor-4", "Choice 4: ");
+
+    const inst3 = this.newHTML("p", "correct-choice");
+    inst3.innerText = "Correct Answer:"
+
+    for (let i = 1; i <=4; i++) {
+      this.newRadioInput(`radio-button-${i}`, `Choice ${i}`, "answer-choice");
+    }
+
+    this.newHTML("br", "break");
+
+    const btn = this.newHTML("button", "create-question-button");
+    btn.innerText = "Create New Question";
+
+    this.newHTML("br", "break");
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+  }
+}
 
 // Global (Window) Variables:
 let quiz;
 let user = new User();
 let topics = [];
-
-// Interface Methods (Controller)
-// Quiz Functions
-// requestQuiz takes topicIdsArray and numberOfQuestions and then builds and
-// sends a fetch request to get a list of quiz questions from the API.
+const BASE_URL = "http://localhost:3000";
 
 // Topic Functions
 function deleteTopic(topicId) {
@@ -178,7 +435,6 @@ function getAllTopics() {
     })
     .then((response) => response.json())
     .then((json) => {
-      console.log(json);
       json.forEach((topic) => {
       topics.push(new Topic(topic.id, topic.name))
     })
@@ -187,9 +443,9 @@ function getAllTopics() {
 
 // Quiz Functions
 function getAndAdministerQuiz() {
-  const selectedTopics = getTopicList();
-  const numberOfQuestions = getNumberofQuestions();
-  buildQuestionDiv();
+  const selectedTopics = View.getTopicList();
+  const numberOfQuestions = View.getNumberofQuestions();
+  View.buildQuestionDiv();
   requestQuiz(selectedTopics, numberOfQuestions)
     .then((questionArray) => quiz = instantiateQuiz(questionArray))
     .then(() => quiz.askQuestion());
@@ -233,242 +489,24 @@ function createUser(username, email, password) {
     .then((json) => {
       user.username = username;
       user.token = json.access_token;
-      console.log(user);
     });
 }
 
-function newUserPage() {
-  clearContentDiv();
-
-  welcome = newHTML("h1", "welcome");
-  welcome.innerText = "Welcome to another Quiz App!"
-
-  inst = newHTML("h3", "instructions");
-  inst.innerText = "Please enter your desired username and password";
-
-  uname = newTextInput("username", "Username: ");
-
-  email = newTextInput("email", "Email: ");
-
-  newHTML("br", "br1");
-
-  const label = newHTML("label", `password-label`);
-  label.innerText = "Password: ";
-  password = newHTML("input", "password");
-  password.type = "password";
-  label.setAttribute("for", "password");
-
-  newHTML("br", "br2");
-
-  submitCredsButton = newHTML("button", "create-user-button");
-  submitCredsButton.innerText = "Create User";
-}
-
 // Helper Functions
-function newHTML(tag, id, parentId = "#content-div") {
-  const temp = document.createElement(tag);
-  temp.id = id;
-  document.querySelector("#content-div").appendChild(temp);
-  return temp;
-}
 
-function clearContentDiv() {
-  document.querySelector("#content-div").innerText = "";
-}
-
-function newTextInput(id, labelText, parentId = "#content.div") {
-  newHTML("br", "break");
-  const label = newHTML("label", `${id}-label`, parentId);
-  label.innerText = labelText;
-  const text = newHTML("input", id, parentId);
-  text.type = "textBox";
-  label.setAttribute("for", id);
-}
-
-function newRadioInput(id, labelText, groupName, parentId = "#content.div") {
-  newHTML("br", "break");
-  const label = newHTML("label", "label");
-  label.innerText = labelText;
-  const choice = newHTML("input", id);
-  choice.type = "radio";
-  choice.setAttribute("name", groupName);
-  label.setAttribute("for", id);
-}
 
 // Display / DOM interaction (View)
-function buildQuestionDiv() {
-  document.querySelector("#content-div").innerHTML = "";
-
-  newHTML("h1", "question-number");
-  newHTML("h3", "stem");
-  const choice1 = newHTML("h3", "choice1")
-  choice1.className = "choice";
-  const choice2 = newHTML("h3", "choice2")
-  choice2.className = "choice";
-  const choice3 = newHTML("h3", "choice3")
-  choice3.className = "choice";
-  const choice4 = newHTML("h3", "choice4")
-  choice4.className = "choice";
-}
-
-function displayQuestion(question) {
-  document.querySelector("#question-number").innerText = `Question #${question.questionNumber}`;
-  document.querySelector("#stem").innerText = question.stem;
-  document.querySelector("#choice1").innerText = `A. ${question.choices[0]}`;
-  document.querySelector("#choice2").innerText = `B. ${question.choices[1]}`;
-  document.querySelector("#choice3").innerText = `C. ${question.choices[2]}`;
-  document.querySelector("#choice4").innerText = `D. ${question.choices[3]}`;
-}
-
-function displayTopicList() {
-  clearContentDiv();
-
-  const inst1 = newHTML("h2", "inst1");
-  inst1.innerText = "Please select your quiz topics and the number of questions you'd like to answer...";
-
-  const inst2 = newHTML("h3", "inst2");
-  inst2.innerText = "If you do not select any topics, all topics will be included.";
-
-  const ul = newHTML("ul", "list");
-
-  for (const topic of topics) {
-    const li = document.createElement("li");
-    li.innerText = topic.name;
-    ul.appendChild(li);
-    const ck = document.createElement('input');
-    ck.type = "checkbox";
-    ck.id = `topic${topic.id}`
-    li.appendChild(ck);
-  }
-
-  const p = newHTML("p", "label")
-  p.innerText = "Number of Questions:";
-  const num = newHTML("input", "num-questions");
-  num.type = "textbox";
-  num.value = "5";
-
-  const button = newHTML("button", "make-quiz")
-  button.innerText = "Create Quiz";
-}
-
-function getTopicList() {
-  const topicIdList = [];
-  const inputs = document.querySelectorAll("input");
-  for (input of inputs) {
-    if(input.type == "checkbox" && input.checked) {
-      topicIdList.push(parseInt(input.id.slice(5)))
-    }
-  }
-  if (topicIdList.length == 0) { // select all topics if none were checked
-    for (input of inputs) {
-      if(input.type == "checkbox") {
-        topicIdList.push(parseInt(input.id.slice(5)))
-      }
-    }
-  }
-  return topicIdList;
-}
-
-function getNumberofQuestions() {
-  return parseInt(document.querySelector("#num-questions").value);
-}
-
-function getAndDisplayStats() {
-  getStats()
-    .then((stats) => displayStats(stats.message));
-}
-
-function displayStats(stats) {
-  clearContentDiv();
-
-  const title = newHTML("h1", "title");
-  title.innerText = `Question Performance Statistics for ${user.username}:`
-
-  const list = newHTML("ul", "list");
-
-  for (const stat_topic in stats) {
-    topic_stats = newHTML("li", `${stat_topic.toLowerCase()}-stats`, list)
-    correct = stats[`${stat_topic}`]["number_correct"];
-    possible = stats[`${stat_topic}`]["number_possible"];
-    percentage = ((correct / possible) * 100).toFixed(1);
-    topic_stats.innerText =
-      `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`
-  }
-
-  backButton = newHTML("button", "back-to-main");
-  backButton.innerText = "Back to Main Menu";
-}
-
 function getStats() {
-  return fetch(`${BASE_URL}/encounters/${parseInt(userId)}`)
+  return fetch(`${BASE_URL}/encounters/${user.username}`, {
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': `Bearers ${user.token}`
+      }
+    })
     .then((response) => response.json());
 }
 
-function displayMainMenu(message) {
-  if(user.loggedIn()) {
-    clearContentDiv();;
-
-    const welcome = newHTML("h1", "welcome");
-    welcome.innerText = "Generic Quiz App";
-
-    const likeTo = newHTML("h3", "like-to");
-    likeTo.innerText = "Would you like to...";
-
-    const quizButton = newHTML("button", "quiz-button");
-    quizButton.innerText = "Take a Quiz";
-
-    const statsButton = newHTML("button", "stats-button");
-    statsButton.innerText = "See Your Topic Stats";
-
-    const newQuestionButton = newHTML("button", "new-question-button");
-    newQuestionButton.innerText = "Create a new Question";
-
-    const logoutButton = newHTML("button", "logout-button");
-    logoutButton.innerText = "Logout";
-  } else {
-    showLogin(message);
-  }
-}
-
-function showLogin(loginErrorMessage = "") {
-  clearContentDiv();
-
-  welcome = newHTML("h1", "welcome");
-  welcome.innerText = "Welcome to another Quiz App!"
-
-  inst = newHTML("h3", "instructions");
-  inst.innerText = "Please enter your username and password or create a new account";
-
-  uname = newHTML("input", "username");
-  uname.type = "textBox";
-  uname.value = "username";
-
-  newHTML("br", "br1");
-
-  password = newHTML("input", "password");
-  password.type = "password";
-  password.value = "password"
-
-  newHTML("br", "br2");
-
-  submitCredsButton = newHTML("button", "login-button");
-  submitCredsButton.innerText = "Log In";
-
-  newUserButton = newHTML("button", "new-user-button");
-  newUserButton.innerText = "New User";
-
-  errorMessage = newHTML("h3", "error-message");
-  errorMessage.innerText = loginErrorMessage;
-}
-
-function quizEndMessage(message) {
-  m = newHTML("h1", "quiz-message");
-  m.innerText = message;
-
-  backButton = newHTML("button", "back-to-main");
-  backButton.innerText = "Back to Main Menu";
-}
-
+// Need to fix - if new topic is also created, new question is attempting to be created before the topic response
 function createQuestion() {
   const questionData = getQuestionData();
 
@@ -483,9 +521,9 @@ function createQuestion() {
     .then((response) => response.json())
     .then((json) => {
       if(json.message == "Success") {
-        displayMainMenu();
+        mainMenu();
       } else {
-        msg = newHTML("h2", "message");
+        msg = View.newHTML("h2", "message");
         msg.innerText = json.message;
       }
     });
@@ -519,47 +557,6 @@ function getQuestionData () {
   return questionObject;
 }
 
-function newQuestionForm() {
-  clearContentDiv();
-
-  title = newHTML("h1", "title");
-  title.innerText = "Create a New Question:";
-
-  inst2 = newHTML("p", "choose-topic");
-  inst2.innerText = "Question Topic: "
-
-  for (const topic of topics) {
-    newRadioInput(`radio-button-${topic.name.toLowerCase()}`,
-      topic.name, "topic-choice");
-  }
-  newRadioInput("radio-button-new-topic", "New Topic", "topic-choice");
-  text = newHTML("input", "new-topic-text");
-  text.type = "textBox";
-
-  newHTML("br", "break");
-  newTextInput("question-stem", "Question Stem: ");
-  newTextInput("distractor-1", "Choice 1: ");
-  newTextInput("distractor-2", "Choice 2: ");
-  newTextInput("distractor-3", "Choice 3: ");
-  newTextInput("distractor-4", "Choice 4: ");
-
-  inst2 = newHTML("p", "correct-choice");
-  inst2.innerText = "Correct Answer:"
-
-  for (let i = 1; i <=4; i++) {
-    newRadioInput(`radio-button-${i}`, `Choice ${i}`, "answer-choice");
-  }
-
-  newHTML("br", "break");
-
-  btn = newHTML("button", "create-question-button");
-  btn.innerText = "Create New Question";
-
-  newHTML("br", "break");
-  backButton = newHTML("button", "back-to-main");
-  backButton.innerText = "Back to Main Menu";
-}
-
 function listeners() {
   document.addEventListener("click", (e) => {
     const id = e.target.id;
@@ -570,15 +567,13 @@ function listeners() {
       getAndAdministerQuiz();
     } else if (id == "quiz-button") {
       setUpQuiz();
-    } else if (id == "logout-button") {
-      logout();
     } else if (id == "login-button") {
       user = new User(document.querySelector("#username").value)
       user.login(document.querySelector("#password").value);
     } else if (id == "back-to-main") {
-      displayMainMenu();
+      mainMenu();
     } else if (id == "new-user-button") {
-      newUserPage();
+      View.newUserPage();
     } else if (id == "create-user-button") {
       createUser(document.querySelector("#username").value,
       document.querySelector("#email").value,
@@ -588,9 +583,9 @@ function listeners() {
     } else if (id == "new-question-button") {
       if(topics.length == 0) {
         getAllTopics()
-          .then(() => newQuestionForm());
+          .then(() => View.newQuestionForm());
       } else {
-        newQuestionForm();
+        View.newQuestionForm();
       }
     } else if (id == "create-question-button") {
       createQuestion();
@@ -619,16 +614,30 @@ function listeners() {
 function setUpQuiz() {
   if (topics.length == 0) {
     getAllTopics()
-      .then(() => displayTopicList());
+      .then(() => View.displayTopicList());
   } else {
     displayTopicList();
   }
 }
+
+function mainMenu() {
+  if(user.loggedIn) {
+    View.displayMainMenu();
+  } else {
+    view.showLogin();
+  }
+}
+
   // Prompt for Username
+function getAndDisplayStats() {
+    getStats()
+      .then((stats) => View.displayStats(stats.message));
+  }
 
 listeners();
-// Log In User
-// showLogin();
-// login("btate712", "temp");
+view = new View();
 
-displayMainMenu();// is called at end of login()
+user.username = "btate712";
+user.login("temp");
+
+mainMenu();// is called at end of login()

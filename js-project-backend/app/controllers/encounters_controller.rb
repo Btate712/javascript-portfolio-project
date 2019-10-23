@@ -1,7 +1,7 @@
 class EncountersController < ApplicationController
   def create
     failed = 0
-    user_id = params[:userId]
+    user_id = User.find_by(username: params[:username]).id
     params[:questions].each do |question|
       e = Encounter.new(user_id: user_id, question_id: question[:id],
         selected_answer: question[:choice])
@@ -15,7 +15,7 @@ class EncountersController < ApplicationController
     # only provide information for the user whose user_id is supplied via the
     # ":id" portion of the URL.  The information returned via json is a summary
     # of quiz question performance for each topic.
-    user_stats = Encounter.stats(params[:id].to_i)
+    user_stats = Encounter.stats(User.find_by(username: params[:id]).id)
     render json: { message: user_stats }
   end
 end
