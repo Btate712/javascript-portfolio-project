@@ -231,9 +231,9 @@ function createUser(username, email, password) {
   fetch(`${BASE_URL}/users`, newUserRequest)
     .then((response) => response.json())
     .then((json) => {
-      showLogin();
-      msg = newHTML("h1", "new-user-message")
-      msg.innerText = json.message;
+      user.username = username;
+      user.token = json.access_token;
+      console.log(user);
     });
 }
 
