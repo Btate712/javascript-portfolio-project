@@ -3,7 +3,7 @@ const BASE_URL = "http://localhost:3000";
 
 // Global (Window) Variables:
 let quiz;
-let userId;
+let userToken;
 let currentUser;
 let topics = [];
 
@@ -86,7 +86,8 @@ class Quiz {
 
     const encounterRequest = {
       method: 'POST',
-      headers: { 'Content-type': 'application/json' },
+      headers: { 'Content-type': 'application/json',
+        'Authorization': `Bearers ${userToken}` },
       body: JSON.stringify(body)
     };
 
@@ -108,7 +109,8 @@ class Quiz {
 function deleteTopic(topicId) {
   const topicDeleteRequest = {
     method: 'DELETE',
-    headers: { 'Content-type': 'application/json' },
+    headers: { 'Content-type': 'application/json',
+      'Authorization': `Bearers ${userToken}` },
   }
 
   fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
@@ -119,7 +121,8 @@ function deleteTopic(topicId) {
 function createNewTopic(topicName) {
   const newTopicRequest = {
     method: 'POST',
-    headers: { 'Content-type': 'application/json' },
+    headers: { 'Content-type': 'application/json',
+      'Authorization': `Bearers ${userToken}` },
     body: JSON.stringify({
       topic_name: topicName
     })
@@ -132,9 +135,15 @@ function createNewTopic(topicName) {
 
 function getAllTopics() {
   topics = [];
-  return fetch(`${BASE_URL}/topics`)
+  return fetch(`${BASE_URL}/topics`,
+    {
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': `Bearers ${userToken}` }
+    })
     .then((response) => response.json())
     .then((json) => {
+      console.log(json);
       json.forEach((topic) => {
       topics.push(new Topic(topic.id, topic.name))
     })
@@ -155,7 +164,7 @@ function requestQuiz(topicIdsArray, numberOfQuestions) {
   const topicIds = topicIdsArray.join(',');
   const questionIndexRequest = {
     method: 'POST',
-    headers: { 'Content-type': 'application/json' },
+    headers: { 'Content-type': 'application/json', 'Authorization': `Bearers ${userToken}` },
     body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
   };
 
@@ -183,11 +192,11 @@ function login(username, password) {
     body: JSON.stringify( { username: username, password: password } )
   };
 
-  return fetch(`${BASE_URL}/sessions/`, newSessionRequest)
+  return fetch(`${BASE_URL}/users/login`, newSessionRequest)
     .then((response) => response.json())
     .then((json) => {
-      userId = json.id;
-      currentUser = json.username;
+      userToken = json.access_token;
+      currentUser = username;
       displayMainMenu(json.message)});
 }
 
@@ -203,12 +212,12 @@ function logout() {
     .then(() => showLogin());
 }
 
-function createUser(username, password) {
+function createUser(username, email, password) {
   const newUserRequest = {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({
-      username: username, password: password
+      username: username, email: email, password: password
     })
   }
 
@@ -230,15 +239,17 @@ function newUserPage() {
   inst = newHTML("h3", "instructions");
   inst.innerText = "Please enter your desired username and password";
 
-  uname = newHTML("input", "username");
-  uname.type = "textBox";
-  uname.value = "username";
+  uname = newTextInput("username", "Username: ");
+
+  email = newTextInput("email", "Email: ");
 
   newHTML("br", "br1");
 
+  const label = newHTML("label", `password-label`);
+  label.innerText = "Password: ";
   password = newHTML("input", "password");
   password.type = "password";
-  password.value = "password"
+  label.setAttribute("for", "password");
 
   newHTML("br", "br2");
 
@@ -387,7 +398,7 @@ function getStats() {
 }
 
 function displayMainMenu(message) {
-  if(userId) {
+  if(userToken) {
     clearContentDiv();;
 
     const welcome = newHTML("h1", "welcome");
@@ -456,7 +467,8 @@ function createQuestion() {
 
   const newQuestionRequest = {
     method: 'POST',
-    headers: { 'Content-type': 'application/json' },
+    headers: { 'Content-type': 'application/json',
+      'Authorization': `Bearers ${userToken}` },
     body: JSON.stringify({ questionData })
   }
 
@@ -487,7 +499,7 @@ function getQuestionData () {
     })
   }
 
-  setTimeout(()=> console.log("waiting..."), 100);
+  setTimeout(()=> console.log("waiting..."), 1000);
 
   questionObject["stem"] = document.querySelector("#question-stem").value;
   questionObject["choice1"] = document.querySelector("#distractor-1").value;
@@ -562,6 +574,7 @@ function listeners() {
       newUserPage();
     } else if (id == "create-user-button") {
       createUser(document.querySelector("#username").value,
+      document.querySelector("#email").value,
         document.querySelector("#password").value);
     } else if (id == "stats-button") {
       getAndDisplayStats();
@@ -610,5 +623,5 @@ listeners();
 // Log In User
 // showLogin();
 login("btate712", "temp");
-displayMainMenu();
-// displayMainMenu() is called at end of login()
+
+displayMainMenu();// is called at end of login()

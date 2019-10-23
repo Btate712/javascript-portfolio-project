@@ -1,6 +1,4 @@
 class QuestionsController < ApplicationController
-  # before_action :require_login
-
   def create
     qdata = params[:questionData]
     question = Question.new()

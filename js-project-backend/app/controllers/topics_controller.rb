@@ -1,6 +1,4 @@
 class TopicsController < ApplicationController
-  # before_action :require_login
-
   def index
     topics = Topic.all
     render json: topics, only: [:id, :name]

@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
-
+  skip_before_action :authenticate_request, only: %i[login create]
+  
   def index
     users = User.all
     render json: users, only: [:id, :username]
@@ -11,13 +12,12 @@ class UsersController < ApplicationController
   end
 
   def create
-    user = User.new
-    user.username = params[:username]
-    user.password = params[:password]
+    user = User.create(user_params)
     if(user.save)
-      render json: { message: "Successfully created new user.  Please log in." }
+      response = { message: "Successfully created new user.  Please log in." }
+      render json: response, status: :created
     else
-      render json: { message: user.errors.messages.inspect }
+      render json: { message: "Made it here..."} #{user.errors, status: :bad}
     end
   end
 
@@ -32,9 +32,36 @@ class UsersController < ApplicationController
     end
   end
 
+  def login
+    authenticate params[:username], params[:password]
+  end
+
+  def test
+    render json: {
+          message: 'You have passed authentication and authorization test'
+        }
+  end
+
   private
 
-  def user_params(* args)
-    params.require(:user).permit(args)
+  def user_params
+    params.permit(
+      :username,
+      :email,
+      :password
+    )
+  end
+
+  def authenticate(username, password)
+  command = AuthenticateUser.call(username, password)
+
+    if command.success?
+      render json: {
+        access_token: command.result,
+        message: 'Login Successful'
+      }
+    else
+      render json: { error: command.errors }, status: :unauthorized
+    end
   end
 end

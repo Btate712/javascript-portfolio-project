@@ -6,4 +6,7 @@ Rails.application.routes.draw do
   resources :quizzes, only: [:create]
   resources :sessions, only: [:create, :destroy]
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+
+  get 'test', to: 'users#test'
+  post 'users/login', to: 'users#login'
 end
