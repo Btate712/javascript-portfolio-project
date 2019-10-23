@@ -3,7 +3,7 @@ const BASE_URL = "http://localhost:3000";
 
 // Global (Window) Variables:
 let quiz;
-let userToken;
+let user;
 let currentUser;
 let topics = [];
 
@@ -87,7 +87,7 @@ class Quiz {
     const encounterRequest = {
       method: 'POST',
       headers: { 'Content-type': 'application/json',
-        'Authorization': `Bearers ${userToken}` },
+        'Authorization': `Bearers ${user.token}` },
       body: JSON.stringify(body)
     };
 
@@ -125,7 +125,7 @@ function deleteTopic(topicId) {
   const topicDeleteRequest = {
     method: 'DELETE',
     headers: { 'Content-type': 'application/json',
-      'Authorization': `Bearers ${userToken}` },
+      'Authorization': `Bearers ${user.token}` },
   }
 
   fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
@@ -137,7 +137,7 @@ function createNewTopic(topicName) {
   const newTopicRequest = {
     method: 'POST',
     headers: { 'Content-type': 'application/json',
-      'Authorization': `Bearers ${userToken}` },
+      'Authorization': `Bearers ${user.token}` },
     body: JSON.stringify({
       topic_name: topicName
     })
@@ -154,7 +154,7 @@ function getAllTopics() {
     {
       headers: {
         'Content-type': 'application/json',
-        'Authorization': `Bearers ${userToken}` }
+        'Authorization': `Bearers ${user.token}` }
     })
     .then((response) => response.json())
     .then((json) => {
@@ -179,7 +179,7 @@ function requestQuiz(topicIdsArray, numberOfQuestions) {
   const topicIds = topicIdsArray.join(',');
   const questionIndexRequest = {
     method: 'POST',
-    headers: { 'Content-type': 'application/json', 'Authorization': `Bearers ${userToken}` },
+    headers: { 'Content-type': 'application/json', 'Authorization': `Bearers ${user.token}` },
     body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
   };
 
@@ -210,8 +210,7 @@ function login(username, password) {
   return fetch(`${BASE_URL}/users/login`, newSessionRequest)
     .then((response) => response.json())
     .then((json) => {
-      userToken = json.access_token;
-      currentUser = username;
+      user = new User(username, json.access_token);
       displayMainMenu(json.message)});
 }
 
@@ -413,7 +412,7 @@ function getStats() {
 }
 
 function displayMainMenu(message) {
-  if(userToken) {
+  if(user) {
     clearContentDiv();;
 
     const welcome = newHTML("h1", "welcome");
@@ -483,7 +482,7 @@ function createQuestion() {
   const newQuestionRequest = {
     method: 'POST',
     headers: { 'Content-type': 'application/json',
-      'Authorization': `Bearers ${userToken}` },
+      'Authorization': `Bearers ${user.token}` },
     body: JSON.stringify({ questionData })
   }
 
