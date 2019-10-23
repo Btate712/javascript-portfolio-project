@@ -1,12 +1,3 @@
-// Global Constants:
-const BASE_URL = "http://localhost:3000";
-
-// Global (Window) Variables:
-let quiz;
-let user;
-let currentUser;
-let topics = [];
-
 // Classes (Model)
 class Topic {
   constructor(id, name) {
@@ -113,7 +104,35 @@ class User {
   get token() {
     return this._token;
   }
-}
+
+  set token(token) {
+    this._token = token;
+  }
+  loggedIn() {
+    return !!this.token
+  }
+
+  login(password) {
+    const newSessionRequest = {
+      method: 'POST',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify( { username: this.username, password: password } )
+    };
+
+    return fetch(`${BASE_URL}/users/login`, newSessionRequest)
+      .then((response) => response.json())
+      .then((json) => {
+        this.token = json.access_token;
+        displayMainMenu(json.message)});
+  }
+}// Global Constants:
+const BASE_URL = "http://localhost:3000";
+
+// Global (Window) Variables:
+let quiz;
+let user = new User();
+let currentUser;
+let topics = [];
 
 // Interface Methods (Controller)
 // Quiz Functions
@@ -197,21 +216,6 @@ function instantiateQuiz(questionObjectArray) {
   }
 
   return new Quiz(questionInstanceArray);
-}
-
-// User Functions
-function login(username, password) {
-  const newSessionRequest = {
-    method: 'POST',
-    headers: { 'Content-type': 'application/json' },
-    body: JSON.stringify( { username: username, password: password } )
-  };
-
-  return fetch(`${BASE_URL}/users/login`, newSessionRequest)
-    .then((response) => response.json())
-    .then((json) => {
-      user = new User(username, json.access_token);
-      displayMainMenu(json.message)});
 }
 
 function logout() {
@@ -412,7 +416,7 @@ function getStats() {
 }
 
 function displayMainMenu(message) {
-  if(user) {
+  if(user.loggedIn()) {
     clearContentDiv();;
 
     const welcome = newHTML("h1", "welcome");
@@ -580,8 +584,8 @@ function listeners() {
     } else if (id == "logout-button") {
       logout();
     } else if (id == "login-button") {
-      login(document.querySelector("#username").value,
-        document.querySelector("#password").value);
+      user = new User(document.querySelector("#username").value)
+      user.login(document.querySelector("#password").value);
     } else if (id == "back-to-main") {
       displayMainMenu();
     } else if (id == "new-user-button") {
@@ -606,8 +610,8 @@ function listeners() {
 
   document.addEventListener("keydown", (e) => {
     if(e.keyCode === 13 && !!document.querySelector("#login-button")) {
-      login(document.querySelector("#username").value,
-        document.querySelector("#password").value);
+      user = new User(document.querySelector("#username").value)
+      user.login(document.querySelector("#password").value);
     } else if (e.keyCode === 13 && !!document.querySelector("#create-question-button")) {
       createQuestion();
     } else if ((e.keyCode === 65 || e.keyCode === 49) && !!document.querySelector("#stem")) {
@@ -636,6 +640,6 @@ function setUpQuiz() {
 listeners();
 // Log In User
 // showLogin();
-login("btate712", "temp");
+// login("btate712", "temp");
 
 displayMainMenu();// is called at end of login()
