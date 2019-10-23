@@ -100,6 +100,21 @@ class Quiz {
   }
 }
 
+class User {
+  constructor(username, token) {
+    this._username = username;
+    this._token = token;
+  }
+
+  get username() {
+    return this._username;
+  }
+
+  get token() {
+    return this._token;
+  }
+}
+
 // Interface Methods (Controller)
 // Quiz Functions
 // requestQuiz takes topicIdsArray and numberOfQuestions and then builds and
