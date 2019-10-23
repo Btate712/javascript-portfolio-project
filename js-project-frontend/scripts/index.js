@@ -252,6 +252,9 @@ class View {
 
     const newQuestionButton = this.newHTML("button", "new-question-button");
     newQuestionButton.innerText = "Create a new Question";
+
+    const topicIndexButton = this.newHTML("button", "topic-index-button");
+    topicIndexButton.innerText = "See list of topics";
   }
 
   static showLogin(loginErrorMessage = "") {
@@ -390,6 +393,27 @@ class View {
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
   }
+
+  static listTopics() {
+    this.clearContentDiv();
+
+    const title = this.newHTML("h1", "title");
+    title.innerText = "Topics:";
+
+    for (const topic of topics) {
+      const t = this.newHTML("h3", `topic${topic.id}`);
+      t.innerHTML = `${topic.name}&nbsp&nbsp`;
+      const btn = this.newHTML("button", `delete-topic-${topic.id}`);
+      btn.className = "delete-topic-button";
+      t.style.display = "inline";
+      btn.innerText = "Delete";
+      const br = this.newHTML("br", "br");
+    }
+
+    this.newHTML("br", "break");
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+  }
 }
 
 class APICommunicator {
@@ -401,8 +425,7 @@ class APICommunicator {
     return this._headers;
   }
 
-  setAuthorizationHeader(token) { this._headers["Authorization"] = `Bearers ${token}`
-  }
+  setAuthorizationHeader(token) { this._headers["Authorization"] = `Bearers ${token}` }
 
   getAllTopics() {
     topics = [];
@@ -427,6 +450,17 @@ class APICommunicator {
       .then((response) => response.json())
       .then((json) => json.quiz);
   }
+
+  deleteTopic(topicId) {
+    const topicDeleteRequest = {
+      method: 'DELETE',
+      headers: this.headers,
+    }
+
+    fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
+      .then((response) => response.json())
+      .then((json) => console.log(json));
+  }
 }
 
 // Global (Window) Variables:
@@ -437,18 +471,6 @@ const BASE_URL = "http://localhost:3000";
 
 // Topic Functions
 
-
-function deleteTopic(topicId) {
-  const topicDeleteRequest = {
-    method: 'DELETE',
-    headers: { 'Content-type': 'application/json',
-      'Authorization': `Bearers ${user.token}` },
-  }
-
-  fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
-    .then((response) => response.json())
-    .then((json) => console.log(json));
-}
 
 function createNewTopic(topicName) {
   const newTopicRequest = {
@@ -604,6 +626,8 @@ function listeners() {
       }
     } else if (id == "create-question-button") {
       createQuestion();
+    } else if (id == "topic-index-button") {
+      showTopics();
     }
   })
 
@@ -625,6 +649,15 @@ function listeners() {
   })
 }
 
+function showTopics() {
+
+  if (topics.length == 0) {
+    apiComm.getAllTopics()
+      .then(() => View.listTopics());
+  } else {
+    View.listTopics();
+  }
+}
 // Program flow
 function setUpQuiz() {
   if (topics.length == 0) {
