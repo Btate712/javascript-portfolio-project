@@ -545,7 +545,7 @@ class APICommunicator {
 }
 
 // Global (Window) Variables:
-let quiz;
+
 const user = new User();
 let topics = [];
 const BASE_URL = "http://localhost:3000";
