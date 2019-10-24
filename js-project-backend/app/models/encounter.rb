@@ -6,7 +6,7 @@ class Encounter < ApplicationRecord
     # { topic_1: {number_correct: xxx, number_possible: xxx },
     #   topic_2: {number_correct: xxx, number_possible: xxx },
     #   topic... etc }
-    user_encounters = self.all.filter { |encounter| encounter.user.id == user_id }
+    user_encounters = User.find(user_id).encounters 
     topic_encounters = user_encounters.uniq { |encounter| encounter.question.topic }
     topic_names = topic_encounters.collect { |encounter| encounter.question.topic.name }
     user_stats = {}
@@ -17,6 +17,7 @@ class Encounter < ApplicationRecord
         topic_encounters.filter { |encounter| encounter.question.correct_choice == encounter.selected_answer }.count
       user_stats[topic_name]["number_possible"] = topic_encounters.count
     end
+
     return user_stats
   end
 end

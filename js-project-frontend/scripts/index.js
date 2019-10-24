@@ -1,4 +1,11 @@
-// Classes (Model)
+window.addEventListener("load", () => {
+  listeners();
+  View.showLogin();
+  //user.username = "btate712";
+  //user.login("temp");
+  //mainMenu();// is called at end of login()
+});
+
 class Topic {
   constructor(id, name) {
     this._id = id;
@@ -102,6 +109,91 @@ class Quiz {
   }
 }
 
+class APICommunicator {
+  constructor() {
+    this._headers = { "Content-type": "application/json" };
+  }
+
+  get headers() {
+    return this._headers;
+  }
+
+  setAuthorizationHeader(token) { this._headers["Authorization"] = `Bearers ${token}` }
+
+  getAllTopics() {
+    topics = [];
+    return fetch(`${BASE_URL}/topics`, { headers: this.headers })
+      .then((response) => response.json())
+      .then((json) => {
+        json.forEach((topic) => {
+        topics.push(new Topic(topic.id, topic.name))
+      })
+    });
+  }
+
+  requestQuiz(topicIdsArray, numberOfQuestions) {
+    const topicIds = topicIdsArray.join(',');
+    const questionIndexRequest = {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
+    };
+
+    return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
+      .then((response) => response.json())
+      .then((json) => json.quiz);
+  }
+
+  deleteTopic(topicId) {
+    const topicDeleteRequest = {
+      method: 'DELETE',
+      headers: this.headers,
+    }
+
+    return fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
+      .then((response) => response.json());
+  }
+
+  createNewTopic(topicName) {
+    const newTopicRequest = {
+      method: 'POST',
+      headers: { 'Content-type': 'application/json',
+        'Authorization': `Bearers ${user.token}` },
+      body: JSON.stringify({
+        topic_name: topicName
+      })
+    }
+
+    fetch(`${BASE_URL}/topics`, newTopicRequest)
+      .then((response) => response.json())
+      .then((json) => {
+        // add new topic to topic list
+        if( json.status == "success" ) {
+          const t = new Topic(json.message, topicName)
+          topics.push(t);
+        }
+        showTopics();
+      })
+  }
+
+  createUser(username, email, password) {
+    const newUserRequest = {
+      method: 'POST',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify({
+        username: username, email: email, password: password
+      })
+    }
+
+    fetch(`${BASE_URL}/users`, newUserRequest)
+      .then((response) => response.json())
+      .then((json) => {
+        user.username = username;
+        user.token = json.access_token;
+      });
+  }
+}
+
 class User {
   constructor(username, token) {
     this._username = username;
@@ -142,6 +234,11 @@ class User {
         apiComm.setAuthorizationHeader(this.token);
         mainMenu()});
   }
+
+  logout() {
+    apiComm.setAuthorizationHeader(0);
+    View.showLogin();
+  }
 }
 
 class View {
@@ -163,12 +260,12 @@ class View {
   }
 
   static displayQuestion(question) {
-    document.querySelector("#question-number").innerText = `Question #${question.questionNumber}`;
-    document.querySelector("#stem").innerText = question.stem;
-    document.querySelector("#choice1").innerText = `A. ${question.choices[0]}`;
-    document.querySelector("#choice2").innerText = `B. ${question.choices[1]}`;
-    document.querySelector("#choice3").innerText = `C. ${question.choices[2]}`;
-    document.querySelector("#choice4").innerText = `D. ${question.choices[3]}`;
+    document.querySelector("#question-number").innerHTML = `Question #${question.questionNumber}`;
+    document.querySelector("#stem").innerHTML = question.stem;
+    document.querySelector("#choice1").innerHTML = `A. ${question.choices[0]}`;
+    document.querySelector("#choice2").innerHTML = `B. ${question.choices[1]}`;
+    document.querySelector("#choice3").innerHTML = `C. ${question.choices[2]}`;
+    document.querySelector("#choice4").innerHTML = `D. ${question.choices[3]}`;
   }
 
   static displayTopicList() {
@@ -198,8 +295,17 @@ class View {
     num.type = "textbox";
     num.value = "5";
 
-    const button = this.newHTML("button", "make-quiz")
-    button.innerText = "Create Quiz";
+    this.newHTML("br", "br");
+    const makeQuizButton = this.newHTML("button", "make-quiz")
+    makeQuizButton.innerText = "Create Quiz";
+
+    this.newHTML("br", "br");
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+
+    this.newHTML("br", "br");
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static getTopicList() {
@@ -243,6 +349,9 @@ class View {
 
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static displayMainMenu(message) {
@@ -255,47 +364,55 @@ class View {
     const likeTo = this.newHTML("h3", "like-to");
     likeTo.innerText = "Would you like to...";
 
+    this.newHTML("br", "br");
     const quizButton = this.newHTML("button", "quiz-button");
     quizButton.innerText = "Take a Quiz";
 
+    this.newHTML("br", "br");
     const statsButton = this.newHTML("button", "stats-button");
     statsButton.innerText = "See Your Topic Stats";
 
+    this.newHTML("br", "br");
     const newQuestionButton = this.newHTML("button", "new-question-button");
     newQuestionButton.innerText = "Create a new Question";
 
+    this.newHTML("br", "br");
     const topicIndexButton = this.newHTML("button", "topic-index-button");
     topicIndexButton.innerText = "See list of topics";
+
+    this.newHTML("br", "br");
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static showLogin(loginErrorMessage = "") {
     this.clearContentDiv();
 
-    welcome = this.newHTML("h1", "welcome");
+    const welcome = this.newHTML("h1", "welcome");
     welcome.innerText = "Welcome to another Quiz App!"
 
-    inst = this.newHTML("h3", "instructions");
+    const inst = this.newHTML("h3", "instructions");
     inst.innerText = "Please enter your username and password or create a new account";
 
-    uname = this.newHTML("input", "username");
-    uname.type = "textBox";
-    uname.value = "username";
+    const uname = this.newTextInput("username", "Username: ");
 
     this.newHTML("br", "br1");
 
-    password = this.newHTML("input", "password");
-    password.type = "password";
-    password.value = "password"
+    const passwordLabel = this.newHTML("label", "password-label");
+    passwordLabel.innerText = "Password: ";
+    const passwordField = this.newHTML("input", "password");
+    passwordField.type = "password";
+    passwordLabel.setAttribute("for", "password");
 
     this.newHTML("br", "br2");
 
-    submitCredsButton = this.newHTML("button", "login-button");
+    const submitCredsButton = this.newHTML("button", "login-button");
     submitCredsButton.innerText = "Log In";
 
-    newUserButton = this.newHTML("button", "new-user-button");
+    const newUserButton = this.newHTML("button", "new-user-button");
     newUserButton.innerText = "New User";
 
-    errorMessage = this.newHTML("h3", "error-message");
+    const errorMessage = this.newHTML("h3", "error-message");
     errorMessage.innerText = loginErrorMessage;
   }
 
@@ -305,6 +422,9 @@ class View {
 
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static newUserPage() {
@@ -408,6 +528,9 @@ class View {
     this.newHTML("br", "break");
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static listTopics() {
@@ -433,6 +556,9 @@ class View {
     this.newHTML("br", "break");
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static newTopicForm() {
@@ -447,6 +573,9 @@ class View {
 
     const btn = this.newHTML("button", "create-topic-button");
     btn.innerText = "Create Topic";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static getNewQuestionData() {
@@ -476,81 +605,6 @@ class View {
   }
 }
 
-class APICommunicator {
-  constructor() {
-    this._headers = { "Content-type": "application/json" };
-  }
-
-  get headers() {
-    return this._headers;
-  }
-
-  setAuthorizationHeader(token) { this._headers["Authorization"] = `Bearers ${token}` }
-
-  getAllTopics() {
-    topics = [];
-    return fetch(`${BASE_URL}/topics`, { headers: this.headers })
-      .then((response) => response.json())
-      .then((json) => {
-        json.forEach((topic) => {
-        topics.push(new Topic(topic.id, topic.name))
-      })
-    });
-  }
-
-  requestQuiz(topicIdsArray, numberOfQuestions) {
-    const topicIds = topicIdsArray.join(',');
-    const questionIndexRequest = {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify( { topicIds: topicIds, numberOfQuestions: numberOfQuestions} )
-    };
-
-    return fetch(`${BASE_URL}/quizzes/`, questionIndexRequest)
-      .then((response) => response.json())
-      .then((json) => json.quiz);
-  }
-
-  deleteTopic(topicId) {
-    const topicDeleteRequest = {
-      method: 'DELETE',
-      headers: this.headers,
-    }
-
-    return fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
-      .then((response) => response.json());
-  }
-
-  createNewTopic(topicName) {
-    const newTopicRequest = {
-      method: 'POST',
-      headers: { 'Content-type': 'application/json',
-        'Authorization': `Bearers ${user.token}` },
-      body: JSON.stringify({
-        topic_name: topicName
-      })
-    }
-
-    fetch(`${BASE_URL}/topics`, newTopicRequest)
-      .then((response) => response.json())
-      .then((json) => {
-        // add new topic to topic list
-        if( json.status == "success" ) {
-          const t = new Topic(json.message, topicName)
-          topics.push(t);
-        }
-        showTopics();
-      })
-  }
-}
-
-// Global (Window) Variables:
-
-const user = new User();
-let topics = [];
-const BASE_URL = "http://localhost:3000";
-
-// Quiz Functions
 function getAndAdministerQuiz() {
   const selectedTopics = View.getTopicList();
   const numberOfQuestions = View.getNumberofQuestions();
@@ -572,27 +626,6 @@ function removeTopic(id) {
     })
 }
 
-function createUser(username, email, password) {
-  const newUserRequest = {
-    method: 'POST',
-    headers: { 'Content-type': 'application/json' },
-    body: JSON.stringify({
-      username: username, email: email, password: password
-    })
-  }
-
-  fetch(`${BASE_URL}/users`, newUserRequest)
-    .then((response) => response.json())
-    .then((json) => {
-      user.username = username;
-      user.token = json.access_token;
-    });
-}
-
-// Helper Functions
-
-
-// Display / DOM interaction (View)
 function getStats() {
   return fetch(`${BASE_URL}/encounters/${user.username}`, {
       headers: {
@@ -603,7 +636,6 @@ function getStats() {
     .then((response) => response.json());
 }
 
-// Need to fix - if new topic is also created, new question is attempting to be created before the topic response
 function createQuestion() {
   const questionData = View.getNewQuestionData();
 
@@ -628,8 +660,6 @@ function createQuestion() {
     });
 }
 
-
-
 function listeners() {
   document.addEventListener("click", (e) => {
     const id = e.target.id;
@@ -641,14 +671,14 @@ function listeners() {
     } else if (id == "quiz-button") {
       setUpQuiz();
     } else if (id == "login-button") {
-      user = new User(document.querySelector("#username").value)
+      user.username = document.querySelector("#username").value
       user.login(document.querySelector("#password").value);
     } else if (id == "back-to-main") {
       mainMenu();
     } else if (id == "new-user-button") {
       View.newUserPage();
     } else if (id == "create-user-button") {
-      createUser(document.querySelector("#username").value,
+      apiComm.createUser(document.querySelector("#username").value,
       document.querySelector("#email").value,
         document.querySelector("#password").value);
     } else if (id == "stats-button") {
@@ -670,12 +700,14 @@ function listeners() {
       View.newTopicForm();
     } else if (id == "create-topic-button") {
       apiComm.createNewTopic(document.querySelector("#new-topic-name").value)
+    } else if (id == "logout") {
+      user.logout();
     }
   })
 
   document.addEventListener("keydown", (e) => {
     if(e.keyCode === 13 && !!document.querySelector("#login-button")) {
-      user = new User(document.querySelector("#username").value)
+      user.username = document.querySelector("#username").value
       user.login(document.querySelector("#password").value);
     } else if (e.keyCode === 13 && !!document.querySelector("#create-question-button")) {
       createQuestion();
@@ -700,7 +732,7 @@ function showTopics() {
     View.listTopics();
   }
 }
-// Program flow
+
 function setUpQuiz() {
   if (topics.length == 0) {
     apiComm.getAllTopics()
@@ -724,11 +756,9 @@ function getAndDisplayStats() {
       .then((stats) => View.displayStats(stats.message));
   }
 
-listeners();
+// Global Variables/Constants:
 const view = new View();
 const apiComm = new APICommunicator();
-
-user.username = "btate712";
-user.login("temp");
-
-mainMenu();// is called at end of login()
+const user = new User();
+let topics = [];
+const BASE_URL = "http://localhost:3000";
