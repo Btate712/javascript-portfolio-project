@@ -555,7 +555,7 @@ function getStats() {
 
 // Need to fix - if new topic is also created, new question is attempting to be created before the topic response
 function createQuestion() {
-  const questionData = getQuestionData();
+  const questionData = getNewQuestionData();
 
   const newQuestionRequest = {
     method: 'POST',
@@ -576,7 +576,7 @@ function createQuestion() {
     });
 }
 
-function getQuestionData () {
+function getNewQuestionData () {
   questionObject = {};
 
   const topicName = document.querySelector("input[name=topic-choice]:checked").id.slice(13);
@@ -629,7 +629,7 @@ function listeners() {
       getAndDisplayStats();
     } else if (id == "new-question-button") {
       if(topics.length == 0) {
-        getAllTopics()
+        apiComm.getAllTopics()
           .then(() => View.newQuestionForm());
       } else {
         View.newQuestionForm();
@@ -639,7 +639,6 @@ function listeners() {
     } else if (id == "topic-index-button") {
       showTopics();
     } else if (e.target.className == "delete-topic-button") {
-      console.log(e.target);
       removeTopic(parseInt(id.slice(13)));
     }
   })

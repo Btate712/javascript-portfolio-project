@@ -17,6 +17,17 @@ class TopicsController < ApplicationController
 
   def destroy
     if topic = Topic.find(params[:id])
+      questions = topic.questions
+      if questions
+        questions.each do |question|
+          if question.encounters
+            question.encounters.each do |encounter|
+              encounter.delete
+            end
+          end 
+          question.delete
+        end
+      end
       topic.delete
       render json: { message: "success" }
     else
