@@ -209,7 +209,7 @@ class APICommunicator {
         return json.message;
       })
       .then((topicInfo) => {
-        return new Topic(topicId, topicInfo.topic_name, topicInfo.questions)} )
+        return topic = new Topic(topicId, topicInfo.topic_name, topicInfo.questions)} )
       .then((topic) => {
         topic.show()
       });
@@ -267,8 +267,32 @@ class View {
   constructor() {  }
 
   static displayTopic(name, questions) {
-    console.log(name);
-    console.log(questions);
+    this.clearContentDiv();
+
+    const title = this.newHTML("h1", "title");
+    title.innerText = `${name} Questions:`;
+
+    const list = this.newHTML("ul", "list");
+
+    for (const question of questions) {
+      const questionStem = this.newHTML("li", `question-${question.id}`, list);
+      questionStem.innerHTML = `${question.stem} `;
+      questionStem.style.display = "inline";
+      const btn = this.newHTML("button", `question-show-${question.id}`, questionStem);
+      btn.innerText = "Show Question Details";
+      this.newHTML("br", "br");
+    }
+
+    this.backAndLogoutButtons();
+  }
+
+  static backAndLogoutButtons() {
+    this.newHTML("br", "break");
+    const backButton = this.newHTML("button", "back-to-main");
+    backButton.innerText = "Back to Main Menu";
+
+    const logoutButton = this.newHTML("button", "logout")
+    logoutButton.innerText = "logout";
   }
 
   static buildQuestionDiv() {
@@ -795,4 +819,5 @@ const view = new View();
 const apiComm = new APICommunicator();
 const user = new User();
 let topics = [];
+let topic = [];
 const BASE_URL = "http://localhost:3000";
