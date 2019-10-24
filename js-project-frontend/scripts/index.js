@@ -266,6 +266,35 @@ class User {
 class View {
   constructor() {  }
 
+  static showQuestion(id) {
+    const questionToDisplay = topic.questions.find(question => question.id == id);
+    console.log(questionToDisplay);
+    //this.displayQuestion(questionToDisplay);
+    this.clearContentDiv();
+
+    const questionId = document.createElement("h3");
+    questionId.id = "question-id";
+    questionId.innerHTML = `Question ID# ${questionToDisplay.id}`;
+
+    this.buildQuestionDiv();
+
+    document.querySelector("#content-div").insertBefore(questionId, document.querySelector("#stem"));
+    document.querySelector("#stem").innerHTML = questionToDisplay.stem;
+    document.querySelector("#choice1").innerHTML = `A. ${questionToDisplay.choice_1}`;
+    document.querySelector("#choice2").innerHTML = `B. ${questionToDisplay.choice_2}`;
+    document.querySelector("#choice3").innerHTML = `C. ${questionToDisplay.choice_3}`;
+    document.querySelector("#choice4").innerHTML = `D. ${questionToDisplay.choice_4}`;
+
+    const correctAnswer = this.newHTML("h3", "correct-answer");
+    correctAnswer.innerText =
+      `Correct choice is ${String.fromCharCode(questionToDisplay.correct_choice + 64)}`;
+
+    const backToTopicsButton = this.newHTML("button", "back-button");
+    backToTopicsButton.innerText = "Back to Questions";
+
+    this.backAndLogoutButtons();
+  }
+
   static displayTopic(name, questions) {
     this.clearContentDiv();
 
@@ -279,9 +308,13 @@ class View {
       questionStem.innerHTML = `${question.stem} `;
       questionStem.style.display = "inline";
       const btn = this.newHTML("button", `question-show-${question.id}`, questionStem);
+      btn.className = "show-question-details-button";
       btn.innerText = "Show Question Details";
       this.newHTML("br", "br");
     }
+
+    const backToTopicsButton = this.newHTML("button", "back-to-topics-button");
+    backToTopicsButton.innerText = "Back to Topic List";
 
     this.backAndLogoutButtons();
   }
@@ -292,7 +325,7 @@ class View {
     backButton.innerText = "Back to Main Menu";
 
     const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    logoutButton.innerText = "Logout";
   }
 
   static buildQuestionDiv() {
@@ -759,7 +792,13 @@ function listeners() {
     } else if (id == "logout") {
       user.logout();
     } else if (e.target.className == "see-questions-button") {
-        apiComm.getTopicQuestions(id.slice(20));
+      apiComm.getTopicQuestions(id.slice(20));
+    } else if (e.target.className == "show-question-details-button") {
+      View.showQuestion(parseInt(id.slice(14)));
+    } else if (id == "back-button") {
+      View.displayTopic(topic.name, topic.questions);
+    } else if (id == "back-to-topics-button") {
+      View.listTopics();
     }
   })
 
