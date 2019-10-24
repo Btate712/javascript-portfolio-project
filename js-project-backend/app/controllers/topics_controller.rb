@@ -9,9 +9,9 @@ class TopicsController < ApplicationController
     topic.name = params[:topic_name]
     if !Topic.find_by(name: topic.name)
       topic.save
-      render json: { message: topic.id }
+      render json: { status: "success", message: topic.id } 
     else
-      render json: { message: "fail - topic already exists" }
+      render json: { status: "fail", message: "topic already exists" }
     end
   end
 
@@ -24,7 +24,7 @@ class TopicsController < ApplicationController
             question.encounters.each do |encounter|
               encounter.delete
             end
-          end 
+          end
           question.delete
         end
       end

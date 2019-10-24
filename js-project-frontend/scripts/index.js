@@ -366,9 +366,14 @@ class View {
       this.newRadioInput(`radio-button-${topic.name.toLowerCase()}`,
         topic.name, "topic-choice");
     }
-    this.newRadioInput("radio-button-new-topic", "New Topic", "topic-choice");
-    const text = this.newHTML("input", "new-topic-text");
-    text.type = "textBox";
+
+    // new topic option commented out because of difficulties with async functions
+    // this.newRadioInput("radio-button-new-topic", "New Topic", "topic-choice");
+    // const text = this.newHTML("input", "new-topic-text");
+    // text.type = "textBox";
+
+    const newTopicButton = this.newHTML("button", "new-topic-button");
+    newTopicButton.innerText = "New Topic";
 
     this.newHTML("br", "break");
     this.newTextInput("question-stem", "Question Stem: ");
@@ -411,8 +416,26 @@ class View {
     }
 
     this.newHTML("br", "break");
+    const newTopicButton = this.newHTML("button", "new-topic-button");
+    newTopicButton.innerText = "New Topic";
+
+    this.newHTML("br", "break");
     const backButton = this.newHTML("button", "back-to-main");
     backButton.innerText = "Back to Main Menu";
+  }
+
+  static newTopicForm() {
+    this.clearContentDiv();
+
+    const title = this.newHTML("h1", "title");
+    title.innerText = "Create a New Topic:";
+
+    this.newTextInput("new-topic-name", "New topic name: ");
+
+    this.newHTML("br", "br");
+
+    const btn = this.newHTML("button", "create-topic-button");
+    btn.innerText = "Create Topic";
   }
 }
 
@@ -482,9 +505,16 @@ function createNewTopic(topicName) {
     })
   }
 
-  return fetch(`${BASE_URL}/topics`, newTopicRequest)
+  fetch(`${BASE_URL}/topics`, newTopicRequest)
     .then((response) => response.json())
-    .then((json) => json.message );
+    .then((json) => {
+      // add new topic to topic list
+      if( json.status == "success" ) {
+        const t = new Topic(json.message, topicName)
+        topics.push(t);
+      }
+      showTopics();
+    })
 }
 
 
@@ -507,7 +537,7 @@ function removeTopic(id) {
         if (topics[i].id == id) { indexToRemove = i }
       }
       topics.splice(indexToRemove, 1);
-      mainMenu();
+      showTopics();
     })
 }
 
@@ -564,6 +594,8 @@ function createQuestion() {
     body: JSON.stringify({ questionData })
   }
 
+  console.log(newQuestionRequest);
+
   fetch(`${BASE_URL}/questions`, newQuestionRequest)
     .then((response) => response.json())
     .then((json) => {
@@ -576,13 +608,13 @@ function createQuestion() {
     });
 }
 
-function getNewQuestionData () {
-  questionObject = {};
-
+function getNewQuestionData() {
+  const questionObject = {};
   const topicName = document.querySelector("input[name=topic-choice]:checked").id.slice(13);
 
   if (topicName == "new-topic") {
-    questionObject['topicId'] = createNewTopic(document.querySelector("#new-topic-text").value);
+    // next line sets questionObject['topicId'] to a promise and therefor doesn't work.
+    // questionObject['topicId'] = createNewTopic(document.querySelector("#new-topic-text").value)
   } else {
     topics.forEach((topic) => {
       if (topic.name.toLowerCase() == topicName) {
@@ -590,8 +622,6 @@ function getNewQuestionData () {
       }
     })
   }
-
-  setTimeout(()=> console.log("waiting..."), 1000);
 
   questionObject["stem"] = document.querySelector("#question-stem").value;
   questionObject["choice1"] = document.querySelector("#distractor-1").value;
@@ -640,6 +670,10 @@ function listeners() {
       showTopics();
     } else if (e.target.className == "delete-topic-button") {
       removeTopic(parseInt(id.slice(13)));
+    } else if (id == "new-topic-button") {
+      View.newTopicForm();
+    } else if (id == "create-topic-button") {
+      createNewTopic(document.querySelector("#new-topic-name").value)
     }
   })
 
