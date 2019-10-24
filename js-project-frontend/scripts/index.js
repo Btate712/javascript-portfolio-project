@@ -389,7 +389,7 @@ class View {
     this.clearContentDiv();
 
     const welcome = this.newHTML("h1", "welcome");
-    welcome.innerText = "Welcome to another Quiz App!"
+    welcome.innerText = "Welcome to My Quiz App!"
 
     const inst = this.newHTML("h3", "instructions");
     inst.innerText = "Please enter your username and password or create a new account";
