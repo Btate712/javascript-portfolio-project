@@ -1,8 +1,8 @@
 window.addEventListener("load", () => {
   listeners();
-  View.showLogin();
-  //user.username = "btate712";
-  //user.login("temp");
+  //View.showLogin();
+  user.username = "btate712";
+  user.login("temp");
   //mainMenu();// is called at end of login()
 });
 
@@ -192,6 +192,16 @@ class APICommunicator {
         user.token = json.access_token;
       });
   }
+
+  getTopicQuestions(topicId) {
+    const topicRequest = { headers: this.headers }
+
+    fetch(`${BASE_URL}/topics/${topicId}`, topicRequest)
+      .then((response) => response.json())
+      .then((json) => {
+        console.log(json);
+      });
+  }
 }
 
 class User {
@@ -332,6 +342,7 @@ class View {
 
   static displayStats(stats) {
     this.clearContentDiv();
+    console.log(stats);
 
     const title = this.newHTML("h1", "title");
     title.innerText = `Question Performance Statistics for ${user.username}:`
@@ -344,7 +355,7 @@ class View {
       const possible = stats[`${stat_topic}`]["number_possible"];
       const percentage = ((correct / possible) * 100).toFixed(1);
       topic_stats.innerText =
-        `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`
+        `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`;
     }
 
     const backButton = this.newHTML("button", "back-to-main");
@@ -542,10 +553,16 @@ class View {
     for (const topic of topics) {
       const t = this.newHTML("h3", `topic-${topic.id}`);
       t.innerHTML = `${topic.name}&nbsp&nbsp`;
+
+      const questionsButton = this.newHTML("button", `questions-for-topic-${topic.id}`);
+      questionsButton.innerText = "See Questions";
+      questionsButton.className = "see-questions-button";
+
       const btn = this.newHTML("button", `delete-topic-${topic.id}`);
       btn.className = "delete-topic-button";
       t.style.display = "inline";
       btn.innerText = "Delete";
+
       const br = this.newHTML("br", "br");
     }
 
@@ -700,6 +717,8 @@ function listeners() {
       apiComm.createNewTopic(document.querySelector("#new-topic-name").value)
     } else if (id == "logout") {
       user.logout();
+    } else if (e.target.className == "see-questions-button") {
+        apiComm.getTopicQuestions(id.slice(20));
     }
   })
 
