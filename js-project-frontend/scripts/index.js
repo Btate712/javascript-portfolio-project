@@ -7,13 +7,19 @@ window.addEventListener("load", () => {
 });
 
 class Topic {
-  constructor(id, name) {
+  constructor(id, name, questions) {
     this._id = id;
     this._name = name;
+    this._questions = questions;
   }
 
   get id() { return this._id  }
   get name() { return this._name }
+  get questions() { return this._questions }
+
+  show() {
+    View.displayTopic(this.name, this.questions);
+  }
 }
 
 class Question {
@@ -196,10 +202,16 @@ class APICommunicator {
   getTopicQuestions(topicId) {
     const topicRequest = { headers: this.headers }
 
-    fetch(`${BASE_URL}/topics/${topicId}`, topicRequest)
+    return fetch(`${BASE_URL}/topics/${topicId}`, topicRequest)
       .then((response) => response.json())
       .then((json) => {
-        console.log(json);
+        // console.log(json.message)
+        return json.message;
+      })
+      .then((topicInfo) => {
+        return new Topic(topicId, topicInfo.topic_name, topicInfo.questions)} )
+      .then((topic) => {
+        topic.show()
       });
   }
 }
@@ -253,6 +265,11 @@ class User {
 
 class View {
   constructor() {  }
+
+  static displayTopic(name, questions) {
+    console.log(name);
+    console.log(questions);
+  }
 
   static buildQuestionDiv() {
     document.querySelector("#content-div").innerHTML = "";

@@ -4,12 +4,22 @@ class TopicsController < ApplicationController
     render json: topics, only: [:id, :name]
   end
 
+  def show
+    topic = Topic.find(params[:id])
+    if topic
+      render json: { status: "success", message: { topic_name: topic.name,
+        questions: topic.questions }}
+    else
+      render json: { status: "fail", message: "could not find topic" }
+    end
+  end
+
   def create
     topic = Topic.new
     topic.name = params[:topic_name]
     if !Topic.find_by(name: topic.name)
       topic.save
-      render json: { status: "success", message: topic.id } 
+      render json: { status: "success", message: topic.id }
     else
       render json: { status: "fail", message: "topic already exists" }
     end
