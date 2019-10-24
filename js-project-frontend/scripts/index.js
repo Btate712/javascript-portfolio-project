@@ -89,6 +89,17 @@ class Quiz {
   complete() {
     return this._currentQuestionIndex == this.questions.length ? true : false;
   }
+
+  static newFromQuestionObjectArray(questionObjectArray) {
+    const questionInstanceArray = [];
+    let index = 1;
+    for (const question of questionObjectArray) {
+      questionInstanceArray.push(new Question(question, index));
+      index++;
+    }
+
+    return new Quiz(questionInstanceArray);
+  }
 }
 
 class User {
@@ -437,6 +448,32 @@ class View {
     const btn = this.newHTML("button", "create-topic-button");
     btn.innerText = "Create Topic";
   }
+
+  static getNewQuestionData() {
+    const questionObject = {};
+    const topicName = document.querySelector("input[name=topic-choice]:checked").id.slice(13);
+
+    if (topicName == "new-topic") {
+      // next line sets questionObject['topicId'] to a promise and therefor doesn't work.
+      // questionObject['topicId'] = createNewTopic(document.querySelector("#new-topic-text").value)
+    } else {
+      topics.forEach((topic) => {
+        if (topic.name.toLowerCase() == topicName) {
+          questionObject['topicId'] = topic.id;
+        }
+      })
+    }
+
+    questionObject["stem"] = document.querySelector("#question-stem").value;
+    questionObject["choice1"] = document.querySelector("#distractor-1").value;
+    questionObject["choice2"] = document.querySelector("#distractor-2").value;
+    questionObject["choice3"] = document.querySelector("#distractor-3").value;
+    questionObject["choice4"] = document.querySelector("#distractor-4").value;
+
+    questionObject['correctChoice'] = document.querySelector("input[name=answer-choice]:checked").id.slice(13);
+
+    return questionObject;
+  }
 }
 
 class APICommunicator {
@@ -481,8 +518,29 @@ class APICommunicator {
     }
 
     return fetch(`${BASE_URL}/topics/${topicId}`, topicDeleteRequest)
+      .then((response) => response.json());
+  }
+
+  createNewTopic(topicName) {
+    const newTopicRequest = {
+      method: 'POST',
+      headers: { 'Content-type': 'application/json',
+        'Authorization': `Bearers ${user.token}` },
+      body: JSON.stringify({
+        topic_name: topicName
+      })
+    }
+
+    fetch(`${BASE_URL}/topics`, newTopicRequest)
       .then((response) => response.json())
-      .then((json) => console.log(json));
+      .then((json) => {
+        // add new topic to topic list
+        if( json.status == "success" ) {
+          const t = new Topic(json.message, topicName)
+          topics.push(t);
+        }
+        showTopics();
+      })
   }
 }
 
@@ -492,40 +550,13 @@ const user = new User();
 let topics = [];
 const BASE_URL = "http://localhost:3000";
 
-// Topic Functions
-
-
-function createNewTopic(topicName) {
-  const newTopicRequest = {
-    method: 'POST',
-    headers: { 'Content-type': 'application/json',
-      'Authorization': `Bearers ${user.token}` },
-    body: JSON.stringify({
-      topic_name: topicName
-    })
-  }
-
-  fetch(`${BASE_URL}/topics`, newTopicRequest)
-    .then((response) => response.json())
-    .then((json) => {
-      // add new topic to topic list
-      if( json.status == "success" ) {
-        const t = new Topic(json.message, topicName)
-        topics.push(t);
-      }
-      showTopics();
-    })
-}
-
-
-
 // Quiz Functions
 function getAndAdministerQuiz() {
   const selectedTopics = View.getTopicList();
   const numberOfQuestions = View.getNumberofQuestions();
   View.buildQuestionDiv();
   apiComm.requestQuiz(selectedTopics, numberOfQuestions)
-    .then((questionArray) => quiz = instantiateQuiz(questionArray))
+    .then((questionArray) => quiz = Quiz.newFromQuestionObjectArray(questionArray))
     .then(() => quiz.askQuestion());
 }
 
@@ -539,17 +570,6 @@ function removeTopic(id) {
       topics.splice(indexToRemove, 1);
       showTopics();
     })
-}
-
-function instantiateQuiz(questionObjectArray) {
-  const questionInstanceArray = [];
-  let index = 1;
-  for (const question of questionObjectArray) {
-    questionInstanceArray.push(new Question(question, index));
-    index++;
-  }
-
-  return new Quiz(questionInstanceArray);
 }
 
 function createUser(username, email, password) {
@@ -585,7 +605,7 @@ function getStats() {
 
 // Need to fix - if new topic is also created, new question is attempting to be created before the topic response
 function createQuestion() {
-  const questionData = getNewQuestionData();
+  const questionData = View.getNewQuestionData();
 
   const newQuestionRequest = {
     method: 'POST',
@@ -608,31 +628,7 @@ function createQuestion() {
     });
 }
 
-function getNewQuestionData() {
-  const questionObject = {};
-  const topicName = document.querySelector("input[name=topic-choice]:checked").id.slice(13);
 
-  if (topicName == "new-topic") {
-    // next line sets questionObject['topicId'] to a promise and therefor doesn't work.
-    // questionObject['topicId'] = createNewTopic(document.querySelector("#new-topic-text").value)
-  } else {
-    topics.forEach((topic) => {
-      if (topic.name.toLowerCase() == topicName) {
-        questionObject['topicId'] = topic.id;
-      }
-    })
-  }
-
-  questionObject["stem"] = document.querySelector("#question-stem").value;
-  questionObject["choice1"] = document.querySelector("#distractor-1").value;
-  questionObject["choice2"] = document.querySelector("#distractor-2").value;
-  questionObject["choice3"] = document.querySelector("#distractor-3").value;
-  questionObject["choice4"] = document.querySelector("#distractor-4").value;
-
-  questionObject['correctChoice'] = document.querySelector("input[name=answer-choice]:checked").id.slice(13);
-
-  return questionObject;
-}
 
 function listeners() {
   document.addEventListener("click", (e) => {
@@ -673,7 +669,7 @@ function listeners() {
     } else if (id == "new-topic-button") {
       View.newTopicForm();
     } else if (id == "create-topic-button") {
-      createNewTopic(document.querySelector("#new-topic-name").value)
+      apiComm.createNewTopic(document.querySelector("#new-topic-name").value)
     }
   })
 
