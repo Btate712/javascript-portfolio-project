@@ -1,3 +1,8 @@
 body {
   background-image: url("../images/background_books.jpeg");
 }
+
+#content-div {
+  background-color: #fde4a7;
+  
+}
