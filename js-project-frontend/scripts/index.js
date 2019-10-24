@@ -646,8 +646,6 @@ function createQuestion() {
     body: JSON.stringify({ questionData })
   }
 
-  console.log(newQuestionRequest);
-
   fetch(`${BASE_URL}/questions`, newQuestionRequest)
     .then((response) => response.json())
     .then((json) => {
