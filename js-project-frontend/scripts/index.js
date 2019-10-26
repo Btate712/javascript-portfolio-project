@@ -257,6 +257,7 @@ class User {
 
   logout() {
     apiComm.setAuthorizationHeader(0);
+    user.token = undefined;
     View.showLogin();
   }
 }
@@ -821,7 +822,7 @@ function setUpQuiz() {
 }
 
 function mainMenu() {
-  if(user.loggedIn) {
+  if(user.loggedIn()) {
     View.displayMainMenu();
   } else {
     view.showLogin();

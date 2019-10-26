@@ -33,7 +33,7 @@ body {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(12, 1fr);
-  grid-gap: 0.5rem;
+  grid-gap: 1.5rem;
 }
 
 #title-bar {
@@ -44,8 +44,9 @@ body {
   color: #5c3e03;
 }
 #content-div { grid-area:  4 / 1 / 13 / 10; }
-#logo { grid-area: 3 / 2 / 5 / 5; }
+#buttons-div { grid-area: 7 / 10 / 13 / 13; }
 #top-empty { grid-area: 1 / 1 / 2 / 4; }
+#logo-div { grid-area: 4 / 10 / 7 / 13; }
 
 button {
   background-color: #feeecd;
@@ -68,4 +69,34 @@ textarea {
 
 .question-text-input {
   width: 80%;
+}
+
+#buttons-div {
+  background-color: #fad2e2;
+  max-height: 80%;
+  margin-right: 2em;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(8, 1fr);
+  justify-items: center;
+  align-items: center;
+  width: 15em;
+  justify-self: center;
+}
+
+#logo-div {
+  background-color: #051d56;
+  margin: 2em;
+}
+
+#logo-img {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+#buttons-div .big-button {
+  height: 3em;
+  width: 10em;
+  background-color: #1d4588;
+  color: #d7cb35;
 }
