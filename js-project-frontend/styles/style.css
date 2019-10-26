@@ -52,3 +52,11 @@ button {
   padding: 3px;
   border-radius: 7px;
 }
+
+input[type=textBox] {
+  background-color: #fff7e6;
+}
+
+input[type=password] {
+  background-color: #fff7e6;
+}
