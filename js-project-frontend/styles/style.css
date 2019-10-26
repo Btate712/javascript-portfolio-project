@@ -45,3 +45,10 @@ body {
 #content-div { grid-area:  4 / 1 / 13 / 10; }
 #logo { grid-area: 3 / 2 / 5 / 5; }
 #top-empty { grid-area: 1 / 1 / 2 / 4; }
+
+button {
+  background-color: #feeecd;
+  font-size: 16px;
+  padding: 3px;
+  border-radius: 7px;
+}
