@@ -383,13 +383,7 @@ class View {
     const makeQuizButton = this.newHTML("button", "make-quiz")
     makeQuizButton.innerText = "Create Quiz";
 
-    this.newHTML("br", "br");
-    const backButton = this.newHTML("button", "back-to-main");
-    backButton.innerText = "Back to Main Menu";
-
-    this.newHTML("br", "br");
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static getTopicList() {
@@ -432,11 +426,7 @@ class View {
         `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`;
     }
 
-    const backButton = this.newHTML("button", "back-to-main");
-    backButton.innerText = "Back to Main Menu";
-
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static displayMainMenu(message) {
@@ -467,7 +457,7 @@ class View {
 
     this.newHTML("br", "br");
     const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    logoutButton.innerText = "Logout";
   }
 
   static showLogin(loginErrorMessage = "") {
@@ -610,12 +600,7 @@ class View {
     const btn = this.newHTML("button", "create-question-button");
     btn.innerText = "Create New Question";
 
-    this.newHTML("br", "break");
-    const backButton = this.newHTML("button", "back-to-main");
-    backButton.innerText = "Back to Main Menu";
-
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static listTopics() {
@@ -644,12 +629,7 @@ class View {
     const newTopicButton = this.newHTML("button", "new-topic-button");
     newTopicButton.innerText = "New Topic";
 
-    this.newHTML("br", "break");
-    const backButton = this.newHTML("button", "back-to-main");
-    backButton.innerText = "Back to Main Menu";
-
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static newTopicForm() {

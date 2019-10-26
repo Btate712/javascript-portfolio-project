@@ -1,8 +1,47 @@
 body {
   background-image: url("../images/background_books.jpeg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  max-width: 1850px;
+  max-height: 640px;
 }
 
 #content-div {
   background-color: #fde4a7;
-  
+  padding: 2em;
+  font-family: sans-serif;
+
 }
+
+#title-bar {
+  background-color: #cbf0ff;
+  padding-left: 2em;
+  font-family: sans-serif;
+
+}
+
+.choice:hover {
+  background-color: #ffa64d;
+  cursor: default;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
+  grid-gap: 0.5rem;
+}
+
+#title-bar {
+  grid-area:  3 / 3 / 4 / 11;
+}
+
+#title {
+  color: #5c3e03;
+}
+#content-div { grid-area:  4 / 1 / 13 / 10; }
+#logo { grid-area: 3 / 2 / 5 / 5; }
+#top-empty { grid-area: 1 / 1 / 2 / 4; }
