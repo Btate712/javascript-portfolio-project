@@ -60,3 +60,7 @@ input[type=textBox] {
 input[type=password] {
   background-color: #fff7e6;
 }
+
+.question-text-input {
+  width: 80%;
+}

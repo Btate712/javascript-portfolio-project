@@ -408,8 +408,7 @@ class View {
 
   static displayStats(stats) {
     this.clearContentDiv();
-    console.log(stats);
-
+    
     const title = this.newHTML("h1", "title");
     title.innerText = `Question Performance Statistics for ${user.username}:`
 
@@ -541,6 +540,7 @@ class View {
     const text = this.newHTML("input", id, parentId);
     text.type = "textBox";
     label.setAttribute("for", id);
+    return text;
   }
 
   static newRadioInput(id, labelText, groupName, parentId = "#content.div") {
@@ -576,11 +576,16 @@ class View {
     newTopicButton.innerText = "New Topic";
 
     this.newHTML("br", "break");
-    this.newTextInput("question-stem", "Question Stem: ");
-    this.newTextInput("distractor-1", "Choice 1: ");
-    this.newTextInput("distractor-2", "Choice 2: ");
-    this.newTextInput("distractor-3", "Choice 3: ");
-    this.newTextInput("distractor-4", "Choice 4: ");
+    const stem = this.newTextInput("question-stem", "Question Stem: ");
+    stem.className = "question-text-input";
+    const d1 = this.newTextInput("distractor-1", "Choice 1: ");
+    d1.className = "question-text-input";
+    const d2 = this.newTextInput("distractor-2", "Choice 2: ");
+    d2.className = "question-text-input";
+    const d3 = this.newTextInput("distractor-3", "Choice 3: ");
+    d3.className = "question-text-input";
+    const d4 = this.newTextInput("distractor-4", "Choice 4: ");
+    d4.className = "question-text-input";
 
     const inst3 = this.newHTML("p", "correct-choice");
     inst3.innerText = "Correct Answer:"
@@ -639,8 +644,7 @@ class View {
     const btn = this.newHTML("button", "create-topic-button");
     btn.innerText = "Create Topic";
 
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static getNewQuestionData() {
