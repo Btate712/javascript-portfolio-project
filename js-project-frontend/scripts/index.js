@@ -408,7 +408,7 @@ class View {
 
   static displayStats(stats) {
     this.clearContentDiv();
-    
+
     const title = this.newHTML("h1", "title");
     title.innerText = `Question Performance Statistics for ${user.username}:`
 
@@ -543,6 +543,15 @@ class View {
     return text;
   }
 
+  static newTextArea(id, labelText, parentId = '#content.div') {
+    this.newHTML("br", "break");
+    const label = this.newHTML("label", `${id}-label`, parentId);
+    label.innerText = labelText;
+    const text = this.newHTML("textarea", id, parentId);
+    text.className = "question-text-input";
+    label.setAttribute("for", id);
+    return text;
+  }
   static newRadioInput(id, labelText, groupName, parentId = "#content.div") {
     this.newHTML("br", "break");
     const label = this.newHTML("label", "label");
@@ -576,17 +585,11 @@ class View {
     newTopicButton.innerText = "New Topic";
 
     this.newHTML("br", "break");
-    const stem = this.newTextInput("question-stem", "Question Stem: ");
-    stem.className = "question-text-input";
-    const d1 = this.newTextInput("distractor-1", "Choice 1: ");
-    d1.className = "question-text-input";
-    const d2 = this.newTextInput("distractor-2", "Choice 2: ");
-    d2.className = "question-text-input";
-    const d3 = this.newTextInput("distractor-3", "Choice 3: ");
-    d3.className = "question-text-input";
-    const d4 = this.newTextInput("distractor-4", "Choice 4: ");
-    d4.className = "question-text-input";
-
+    const stem = this.newTextArea("question-stem", "Question Stem: ");
+    const d1 = this.newTextArea("distractor-1", "Choice 1: ");
+    const d2 = this.newTextArea("distractor-2", "Choice 2: ");
+    const d3 = this.newTextArea("distractor-3", "Choice 3: ");
+    const d4 = this.newTextArea("distractor-4", "Choice 4: ");
     const inst3 = this.newHTML("p", "correct-choice");
     inst3.innerText = "Correct Answer:"
 

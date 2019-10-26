@@ -13,7 +13,8 @@ body {
   background-color: #fde4a7;
   padding: 2em;
   font-family: sans-serif;
-
+  max-height: 75%;
+  overflow: auto;
 }
 
 #title-bar {
@@ -58,6 +59,10 @@ input[type=textBox] {
 }
 
 input[type=password] {
+  background-color: #fff7e6;
+}
+
+textarea {
   background-color: #fff7e6;
 }
 
