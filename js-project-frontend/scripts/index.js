@@ -426,7 +426,7 @@ class View {
         `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`;
     }
 
-    this.backAndLogoutButtons();
+    this.backAndLogoutButtons()
   }
 
   static displayMainMenu(message) {
@@ -495,11 +495,7 @@ class View {
     const m = this.newHTML("h1", "quiz-message");
     m.innerText = message;
 
-    const backButton = this.newHTML("button", "back-to-main");
-    backButton.innerText = "Back to Main Menu";
-
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "logout";
+    this.backAndLogoutButtons();
   }
 
   static newUserPage() {
