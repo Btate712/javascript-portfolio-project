@@ -290,8 +290,6 @@ class View {
 
     const backToTopicsButton = this.newHTML("button", "back-button");
     backToTopicsButton.innerText = "Back to Questions";
-
-    this.backAndLogoutButtons();
   }
 
   static displayTopic(name, questions) {
@@ -314,10 +312,9 @@ class View {
 
     const backToTopicsButton = this.newHTML("button", "back-to-topics-button");
     backToTopicsButton.innerText = "Back to Topic List";
-
-    this.backAndLogoutButtons();
   }
 
+/* No longer used since "Main Menu" and "Logout" buttons added to main page
   static backAndLogoutButtons() {
     this.newHTML("br", "break");
     const backButton = this.newHTML("button", "back-to-main");
@@ -326,6 +323,7 @@ class View {
     const logoutButton = this.newHTML("button", "logout")
     logoutButton.innerText = "Logout";
   }
+*/
 
   static buildQuestionDiv() {
     document.querySelector("#content-div").innerHTML = "";
@@ -381,8 +379,6 @@ class View {
     this.newHTML("br", "br");
     const makeQuizButton = this.newHTML("button", "make-quiz")
     makeQuizButton.innerText = "Create Quiz";
-
-    this.backAndLogoutButtons();
   }
 
   static getTopicList() {
@@ -423,8 +419,6 @@ class View {
       topic_stats.innerText =
         `${stat_topic}: ${correct} out of a possible ${possible} = ${percentage}%`;
     }
-
-    this.backAndLogoutButtons()
   }
 
   static displayMainMenu(message) {
@@ -452,11 +446,7 @@ class View {
     this.newHTML("br", "br");
     const topicIndexButton = this.newHTML("button", "topic-index-button");
     topicIndexButton.innerText = "See list of topics";
-
-    this.newHTML("br", "br");
-    const logoutButton = this.newHTML("button", "logout")
-    logoutButton.innerText = "Logout";
-  }
+}
 
   static showLogin(loginErrorMessage = "") {
     this.clearContentDiv();
@@ -492,8 +482,6 @@ class View {
   static quizEndMessage(message) {
     const m = this.newHTML("h1", "quiz-message");
     m.innerText = message;
-
-    this.backAndLogoutButtons();
   }
 
   static newUserPage() {
@@ -602,8 +590,6 @@ class View {
 
     const btn = this.newHTML("button", "create-question-button");
     btn.innerText = "Create New Question";
-
-    this.backAndLogoutButtons();
   }
 
   static listTopics() {
@@ -631,8 +617,6 @@ class View {
     this.newHTML("br", "break");
     const newTopicButton = this.newHTML("button", "new-topic-button");
     newTopicButton.innerText = "New Topic";
-
-    this.backAndLogoutButtons();
   }
 
   static newTopicForm() {
@@ -647,8 +631,6 @@ class View {
 
     const btn = this.newHTML("button", "create-topic-button");
     btn.innerText = "Create Topic";
-
-    this.backAndLogoutButtons();
   }
 
   static getNewQuestionData() {
