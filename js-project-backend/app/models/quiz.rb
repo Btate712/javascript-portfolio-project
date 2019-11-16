@@ -1,4 +1,4 @@
-class Quiz < ApplicationRecord
+class Quiz
   def self.makeQuiz(number_of_questions, topic_ids)
     questions_per_topic = (number_of_questions / topic_ids.count)
     quiz_questions = []
