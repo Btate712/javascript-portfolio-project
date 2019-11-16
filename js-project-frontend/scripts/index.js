@@ -407,12 +407,13 @@ class View {
     this.clearContentDiv();
 
     const title = this.newHTML("h1", "title");
+    console.log(stats);
     title.innerText = `Question Performance Statistics for ${user.username}:`
 
     const list = this.newHTML("ul", "list");
 
     for (const stat_topic in stats) {
-      const topic_stats = this.newHTML("li", `${stat_topic.toLowerCase()}-stats`, list)
+      const topic_stats = this.newHTML("li", `${stat_topic.toLowerCase()}-stats`)
       const correct = stats[`${stat_topic}`]["number_correct"];
       const possible = stats[`${stat_topic}`]["number_possible"];
       const percentage = ((correct / possible) * 100).toFixed(1);
@@ -515,33 +516,33 @@ class View {
     document.querySelector("#content-div").innerText = "";
   }
 
-  static newHTML(tag, id, parentId = "#content-div") {
+  static newHTML(tag, id) {
     const temp = document.createElement(tag);
     temp.id = id;
     document.querySelector("#content-div").appendChild(temp);
     return temp;
   }
 
-  static newTextInput(id, labelText, parentId = "#content.div") {
+  static newTextInput(id, labelText) {
     this.newHTML("br", "break");
-    const label = this.newHTML("label", `${id}-label`, parentId);
+    const label = this.newHTML("label", `${id}-label`);
     label.innerText = labelText;
-    const text = this.newHTML("input", id, parentId);
+    const text = this.newHTML("input", id);
     text.type = "textBox";
     label.setAttribute("for", id);
     return text;
   }
 
-  static newTextArea(id, labelText, parentId = '#content.div') {
+  static newTextArea(id, labelText) {
     this.newHTML("br", "break");
-    const label = this.newHTML("label", `${id}-label`, parentId);
+    const label = this.newHTML("label", `${id}-label`);
     label.innerText = labelText;
-    const text = this.newHTML("textarea", id, parentId);
+    const text = this.newHTML("textarea", id);
     text.className = "question-text-input";
     label.setAttribute("for", id);
     return text;
   }
-  static newRadioInput(id, labelText, groupName, parentId = "#content.div") {
+  static newRadioInput(id, labelText, groupName) {
     this.newHTML("br", "break");
     const label = this.newHTML("label", "label");
     label.innerText = labelText;
