@@ -189,7 +189,7 @@ class APICommunicator {
       })
     }
 
-    fetch(`${BASE_URL}/users`, newUserRequest)
+    return fetch(`${BASE_URL}/users`, newUserRequest)
       .then((response) => response.json())
       .then((json) => {
         user.username = username;
@@ -487,27 +487,27 @@ class View {
   static newUserPage() {
     this.clearContentDiv();
 
-    welcome = this.newHTML("h1", "welcome");
+    const welcome = this.newHTML("h1", "welcome");
     welcome.innerText = "Welcome to another Quiz App!"
 
-    inst = this.newHTML("h3", "instructions");
+    const inst = this.newHTML("h3", "instructions");
     inst.innerText = "Please enter your desired username and password";
 
-    uname = newTextInput("username", "Username: ");
+    const uname = this.newTextInput("username", "Username: ");
 
-    email = newTextInput("email", "Email: ");
+    const email = this.newTextInput("email", "Email: ");
 
     this.newHTML("br", "br1");
 
     const label = this.newHTML("label", `password-label`);
     label.innerText = "Password: ";
-    password = this.newHTML("input", "password");
+    const password = this.newHTML("input", "password");
     password.type = "password";
     label.setAttribute("for", "password");
 
     this.newHTML("br", "br2");
 
-    submitCredsButton = this.newHTML("button", "create-user-button");
+    const submitCredsButton = this.newHTML("button", "create-user-button");
     submitCredsButton.innerText = "Create User";
   }
 
@@ -732,8 +732,9 @@ function listeners() {
       View.newUserPage();
     } else if (id == "create-user-button") {
       apiComm.createUser(document.querySelector("#username").value,
-      document.querySelector("#email").value,
-        document.querySelector("#password").value);
+        document.querySelector("#email").value,
+        document.querySelector("#password").value)
+        .then(() => user.login(document.querySelector("#password").value));
     } else if (id == "stats-button") {
       getAndDisplayStats();
     } else if (id == "new-question-button") {
@@ -807,7 +808,7 @@ function mainMenu() {
   if(user.loggedIn()) {
     View.displayMainMenu();
   } else {
-    view.showLogin();
+    View.showLogin();
   }
 }
 
