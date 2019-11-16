@@ -267,8 +267,7 @@ class View {
 
   static showQuestion(id) {
     const questionToDisplay = topic.questions.find(question => question.id == id);
-    console.log(questionToDisplay);
-    //this.displayQuestion(questionToDisplay);
+
     this.clearContentDiv();
 
     const questionId = document.createElement("h3");
@@ -407,7 +406,7 @@ class View {
     this.clearContentDiv();
 
     const title = this.newHTML("h1", "title");
-    console.log(stats);
+
     title.innerText = `Question Performance Statistics for ${user.username}:`
 
     const list = this.newHTML("ul", "list");
