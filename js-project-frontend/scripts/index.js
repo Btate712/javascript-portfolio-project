@@ -1,7 +1,9 @@
 window.addEventListener("load", () => {
   listeners();
   View.showLogin();
-  //mainMenu();// is called at end of login()
+
+  // user.username = "btate712";
+  // user.login("temp");
 });
 
 class Topic {
